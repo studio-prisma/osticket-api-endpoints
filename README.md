@@ -6,7 +6,7 @@ Extends osTicket's REST API with powerful endpoints for advanced ticket manageme
 
 - Extended Ticket Creation with Markdown formatting, department routing, subticket support
 - Full Ticket Management (update, retrieve, search, delete)
-- Subticket API for parent-child relationships (requires [Subticket Manager Plugin](https://github.com/clonemeagain/plugin-subticket))
+- Subticket API for parent-child relationships (requires [Subticket Manager Plugin](https://github.com/studio-prisma/osticket-subticket-manager))
 - Ticket Statistics (global, by department, by staff)
 - Granular API Key Permissions per endpoint
 - Name-Based Filters (human-readable names instead of IDs)

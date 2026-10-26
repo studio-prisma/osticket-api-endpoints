@@ -6,7 +6,7 @@ return array(
     'name' =>           'API Endpoints',
     'author' =>         'Markus Michalski',
     'description' =>    'Extends osTicket API with additional endpoints and parameters: ticket creation with Markdown support, department selection, and subticket functionality.',
-    'url' =>            'https://github.com/markus-michalski/osticket-plugins/tree/main/api-endpoints',
+    'url' =>            'https://github.com/studio-prisma/osticket-api-endpoints',
     'plugin' =>         'class.ApiEndpointsPlugin.php:ApiEndpointsPlugin',
     'config' =>         'config.php:ApiEndpointsConfig'
 );
