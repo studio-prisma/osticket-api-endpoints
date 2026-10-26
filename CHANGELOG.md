@@ -25,6 +25,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Nothing yet
 
+## [2.3.5] - 2026-10-26
+
+### Security
+- `POST /api/tickets.json` created tickets without an API key. The plugin's route replaces osTicket's own ticket-creation route, and `handleTicketCreation()` called `create()` with the key check skipped (`setSkipApiKeyValidation(true)`) although it had never checked the key itself. The key and its `can_create_tickets` permission are now checked first, before any parameter is validated, so an unauthenticated caller also no longer learns from the validation errors which departments or ticket numbers exist. Regression test: `tests/Unit/TicketCreationAuthTest.php`.
+
 ## [2.3.4] - 2026-03-05
 
 ### Fixed
