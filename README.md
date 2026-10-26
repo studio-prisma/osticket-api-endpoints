@@ -21,7 +21,7 @@ Extends osTicket's REST API with powerful endpoints for advanced ticket manageme
 
 ## Installation
 
-1. Download the latest release from [Releases](https://github.com/markus-michalski/osticket-plugins/releases)
+1. Download `api-endpoints-vX.Y.Z.zip` from the [latest release](https://github.com/studio-prisma/osticket-api-endpoints/releases/latest) and unzip it; it contains the `api-endpoints` folder
 2. Upload the `api-endpoints` folder to `/include/plugins/` on your osTicket server
 3. Enable in **Admin Panel > Manage > Plugins**
 

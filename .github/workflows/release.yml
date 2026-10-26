@@ -1,0 +1,124 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to release (e.g. v2.3.6). Must already exist.'
+        required: true
+        type: string
+      publish:
+        description: 'Attach the package to the GitHub release. Off: build only, the package is kept as a workflow artifact.'
+        required: false
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Determine tag
+        id: tag
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_TAG: ${{ inputs.tag }}
+        run: |
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            TAG="$INPUT_TAG"
+          else
+            TAG="$GITHUB_REF_NAME"
+          fi
+          # Later steps put the tag into shell code; only a plain release tag
+          # may get that far. [[ =~ ]] tests the whole string, grep would not.
+          if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-rc\.[0-9]+)?$ ]]; then
+            echo "::error::not a release tag (vX.Y.Z or vX.Y.Z-rc.N): $TAG"
+            exit 1
+          fi
+          echo "name=$TAG" >> "$GITHUB_OUTPUT"
+
+      # Two checkouts. The build tooling comes from the ref this workflow runs
+      # on (the tag itself on a tag push, the selected branch on a manual run);
+      # the packaged sources always come from the tag. A manual run can
+      # therefore rebuild a tag that predates tools/build-zip.sh.
+      - name: Checkout build tooling
+        uses: actions/checkout@v7
+
+      - name: Checkout the tagged sources
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ steps.tag.outputs.name }}
+          path: source
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: mbstring, json
+          coverage: none
+
+      # Version gate. plugin.php is the single source of the version; if it
+      # disagrees with the tag, the release is wrong and stops here.
+      - name: Verify plugin.php version matches the tag
+        run: |
+          TAG="${{ steps.tag.outputs.name }}"
+          VERSION="${TAG#v}"
+          MANIFEST=$(grep -oP "'version'\s*=>\s*'\K[^']+" source/plugin.php)
+          if [ "$MANIFEST" != "$VERSION" ]; then
+            echo "::error::plugin.php declares '$MANIFEST' but the tag is '$VERSION'."
+            exit 1
+          fi
+          echo "Version $VERSION confirmed."
+
+      - name: Build install package
+        id: build
+        run: |
+          TAG="${{ steps.tag.outputs.name }}"
+          VERSION="${TAG#v}"
+          ./tools/build-zip.sh --source source "$VERSION"
+          echo "asset=dist/api-endpoints-v${VERSION}.zip" >> "$GITHUB_OUTPUT"
+
+      - name: Keep the package as a workflow artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: api-endpoints-${{ steps.tag.outputs.name }}
+          path: ${{ steps.build.outputs.asset }}
+          if-no-files-found: error
+
+      - name: Extract CHANGELOG section for this version
+        id: changelog
+        run: |
+          TAG="${{ steps.tag.outputs.name }}"
+          VERSION="${TAG#v}"
+          # Lines from "## [VERSION]" up to (not including) the next "## [" header.
+          NOTES=$(awk -v v="$VERSION" '
+            $0 ~ "^## \\["v"\\]" { found=1; next }
+            found && /^## \[/ { exit }
+            found { print }
+          ' source/CHANGELOG.md)
+          if [ -z "$NOTES" ]; then
+            echo "::warning::No CHANGELOG section found for $TAG, using a fallback note."
+            NOTES="See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for details."
+          fi
+          {
+            echo 'notes<<RELEASE_NOTES_EOF'
+            echo "$NOTES"
+            echo 'RELEASE_NOTES_EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Create or update the GitHub release
+        if: github.event_name == 'push' || inputs.publish
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ steps.tag.outputs.name }}
+          name: ${{ steps.tag.outputs.name }}
+          body: ${{ steps.changelog.outputs.notes }}
+          files: ${{ steps.build.outputs.asset }}
+          overwrite_files: true
+          draft: false
+          prerelease: false
