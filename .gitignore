@@ -14,3 +14,6 @@ TEST_CURL_COMMANDS.sh
 
 # Releasefiles
 *.zip
+
+# Build output (tools/build-zip.sh)
+/dist/

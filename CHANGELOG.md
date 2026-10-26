@@ -8,10 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Nothing yet
+- `tools/build-zip.sh` builds the install package from `.releaseinclude`: reproducible, refuses missing paths, uncovered PHP files, development directories and literal secrets.
+- `Release` workflow: on a `v*` tag (or by hand for an existing tag) it checks that `plugin.php` matches the tag, builds the package, takes the notes from this file and attaches `api-endpoints-vX.Y.Z.zip` to the release.
 
 ### Changed
-- Nothing yet
+- README points to this fork's releases for the download.
+- CI workflow token is read-only; dev dependencies resolve against PHP 8.2, PHPUnit 11.5.57 (development only, not part of the package).
 
 ### Deprecated
 - Nothing yet
