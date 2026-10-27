@@ -8,12 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- `tools/build-zip.sh` builds the install package from `.releaseinclude`: reproducible, refuses missing paths, uncovered PHP files, development directories and literal secrets.
-- `Release` workflow: on a `v*` tag (or by hand for an existing tag) it checks that `plugin.php` matches the tag, builds the package, takes the notes from this file and attaches `api-endpoints-vX.Y.Z.zip` to the release.
+- Nothing yet
 
 ### Changed
-- README points to this fork's releases for the download.
-- CI workflow token is read-only; dev dependencies resolve against PHP 8.2, PHPUnit 11.5.57 (development only, not part of the package).
+- Nothing yet
 
 ### Deprecated
 - Nothing yet
@@ -26,6 +24,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 - Nothing yet
+
+## [2.4.0] - 2026-10-27
+
+Release of the studio-prisma fork on top of upstream [v2.4.0](https://github.com/markus-michalski/osticket-api-endpoints/releases/tag/v2.4.0). Upstream now contains all fixes from this fork, including the 2.3.5 security fix (upstream #11, #13). The plugin code matches upstream v2.4.0; the fork adds the repository URL, packaging and CI below.
+
+### Added
+- `email` filter on `/api/tickets-search.php` (upstream #7)
+- `tools/build-zip.sh` builds the install package from `.releaseinclude`: reproducible, refuses missing paths, uncovered PHP files, development directories and literal secrets
+- `Release` workflow: on a `v*` tag it checks that `plugin.php` matches the tag, builds the package, takes the notes from this file, attaches `api-endpoints-vX.Y.Z.zip` and a signed build-provenance attestation
+- Dependency review on pull requests
+
+### Changed
+- `plugin.php` `url` and the README download link point to this fork and its releases
+- CI workflow token is read-only; dev dependencies resolve against PHP 8.2, PHPUnit 11.5.57 (development only, not part of the package)
+- README credits contributors (upstream #14)
+
+### Fixed
+- Subticket endpoints: resolve the Subticket Manager plugin via `PluginManager` and stop the infinite `getApiKey()` recursion when `api-key-wildcard` is absent (upstream #10, issue #12)
+- Bootstrap catches `Throwable` instead of `Exception` (upstream #9)
+- Statistics: cast the staff name to string before `strcmp` (upstream #8)
+
+### Security
+- Ticket creation authenticates before anything else (upstream #13, already in fork 2.3.5)
 
 ## [2.3.5] - 2026-10-26
 
@@ -225,3 +246,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [2.3.2]: https://github.com/markus-michalski/osticket-api-endpoints/releases/tag/v2.3.2
 [2.3.3]: https://github.com/markus-michalski/osticket-api-endpoints/releases/tag/v2.3.3
 [2.3.4]: https://github.com/markus-michalski/osticket-api-endpoints/releases/tag/v2.3.4
+[Unreleased]: https://github.com/markus-michalski/osticket-api-endpoints/compare/v2.4.0...HEAD
+[2.4.0]: https://github.com/markus-michalski/osticket-api-endpoints/releases/tag/v2.4.0
