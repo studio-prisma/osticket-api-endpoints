@@ -276,7 +276,7 @@ class TicketService
                 if (!isset($staffStats[$staffId])) {
                     $staffStats[$staffId] = [
                         'staff_id' => $staffId,
-                        'staff_name' => $ticket->getStaff()->getName(),
+                        'staff_name' => (string)$ticket->getStaff()->getName(),
                         'total' => 0,
                         'departments' => []
                     ];
@@ -310,7 +310,7 @@ class TicketService
         $stats['by_department'] = $deptStats;
 
         // Sort staff by name and convert to indexed array
-        usort($staffStats, fn($a, $b) => strcmp($a['staff_name'], $b['staff_name']));
+        usort($staffStats, fn($a, $b) => strcmp((string)$a['staff_name'], (string)$b['staff_name']));
         $stats['by_staff'] = array_values($staffStats);
 
         return $stats;
@@ -332,6 +332,9 @@ class TicketService
         // Department filter
         $deptFilter = $this->resolveDepartmentFilter($params['department'] ?? null);
 
+        //Email filter
+        $emailFilter = isset($params['email']) ? trim($params['email']) : null;
+
         // Pagination
         $limit = $this->resolvePaginationLimit($params['limit'] ?? null);
         $offset = max(0, (int)($params['offset'] ?? 0));
@@ -345,6 +348,11 @@ class TicketService
         // Filter by query (search in subject)
         if ($query !== null && $query !== '') {
             $tickets = $tickets->filter(['cdata__subject__contains' => $query]);
+        }
+
+        // Filter by email (associated user email)
+        if ($emailFilter !== null && $emailFilter !== '') {
+            $tickets = $tickets->filter(['user__emails__address' => $emailFilter]);
         }
 
         // Filter by status
