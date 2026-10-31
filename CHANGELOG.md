@@ -20,10 +20,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Nothing yet
 
 ### Fixed
-- Ticket update ignored the priority. `openapi.yaml` documented a `priority` field, but `update()` had no branch for it, so the request succeeded and the priority stayed unchanged. The update now accepts `priorityId` (name or ID, e.g. `High` or `4`) and `priority` as alias, writes it through the ticket form like osTicket core does, and refreshes the search view. Unknown names return 404, a ticket form without priority field returns 400.
+- Nothing yet
 
 ### Security
 - Nothing yet
+
+## [2.4.1] - 2026-10-31
+
+### Fixed
+- Ticket update ignored the priority. `openapi.yaml` documented a `priority` field, but `update()` had no branch for it, so the request succeeded and the priority stayed unchanged. The update now accepts `priorityId` (name or ID, e.g. `High` or `4`) and `priority` as alias, writes it through the ticket form like osTicket core does, and refreshes the search view. Unknown names return 404, a ticket form without priority field returns 400.
 
 ## [2.4.0] - 2026-10-27
 
@@ -246,5 +251,6 @@ Release of the studio-prisma fork on top of upstream [v2.4.0](https://github.com
 [2.3.2]: https://github.com/markus-michalski/osticket-api-endpoints/releases/tag/v2.3.2
 [2.3.3]: https://github.com/markus-michalski/osticket-api-endpoints/releases/tag/v2.3.3
 [2.3.4]: https://github.com/markus-michalski/osticket-api-endpoints/releases/tag/v2.3.4
-[Unreleased]: https://github.com/markus-michalski/osticket-api-endpoints/compare/v2.4.0...HEAD
+[Unreleased]: https://github.com/studio-prisma/osticket-api-endpoints/compare/v2.4.1...HEAD
 [2.4.0]: https://github.com/markus-michalski/osticket-api-endpoints/releases/tag/v2.4.0
+[2.4.1]: https://github.com/studio-prisma/osticket-api-endpoints/releases/tag/v2.4.1
