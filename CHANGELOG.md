@@ -25,6 +25,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Nothing yet
 
+## [2.6.0] - 2026-11-01
+
+### Added
+- Task endpoints for osTicket tasks, standalone or linked to a ticket:
+  - `GET /api/tickets-tasks-get.php/{number}.json`: task with description, internal notes and updates.
+  - `GET /api/tickets-tasks-search.php`: filter by ticket, status, department, agent, team, unassigned, overdue, standalone, title/number; paging and sorting.
+  - `POST /api/tickets-tasks-create.php`: title, description, ticket, department, agent or team, due date. Returns 201 with the task.
+  - `PATCH /api/tickets-tasks-update.php/{number}.json`: title, link/move/unlink ticket, due date, transfer, assign/unassign, close/reopen, internal note, update. All input and permissions are checked before the first change; the response lists what changed.
+  - `DELETE /api/tickets-tasks-delete.php/{number}.json`: deletes the task with its thread.
+- Five new permissions, one checkbox each: `can_create_tasks`, `can_update_tasks`, `can_read_tasks`, `can_search_tasks` (falls back to read), `can_delete_tasks`. Columns are added on update. Ticket permissions do not grant task access.
+- New setting "Tasks as Agent", separate from "Reply as Agent". Changes run as this agent, so osTicket applies its role per department, logs the same events and sends the same agent alerts as the staff UI. "Off" disables all task changes; reading needs only the key permission.
+- Linking, moving, unlinking, creating and deleting a task leaves an internal note on the affected tickets.
+- `ApiBootstrap::execute()` takes an optional success status code.
+
+### Fixed
+- `isMarkdownPluginActive()` threw an `ArgumentCountError` on osTicket 1.18 when the Markdown Support plugin was missing (`PluginManager::getInstance()` needs an argument there). It now returns false.
+- A JSON request with an empty body failed with "Syntax error" even where the body is optional. A JSON scalar as body now gets a 400 instead of a server error.
+
+### Security
+- PHP runtime errors (`TypeError`, `ArgumentCountError`, ...) are answered with a generic 500. Their messages contained server paths and were sent to the client as 400. The details go to the PHP error log.
+
 ## [2.5.1] - 2026-11-01
 
 ### Changed
@@ -266,8 +287,9 @@ Release of the studio-prisma fork on top of upstream [v2.4.0](https://github.com
 [2.3.2]: https://github.com/markus-michalski/osticket-api-endpoints/releases/tag/v2.3.2
 [2.3.3]: https://github.com/markus-michalski/osticket-api-endpoints/releases/tag/v2.3.3
 [2.3.4]: https://github.com/markus-michalski/osticket-api-endpoints/releases/tag/v2.3.4
-[Unreleased]: https://github.com/studio-prisma/osticket-api-endpoints/compare/v2.5.1...HEAD
+[Unreleased]: https://github.com/studio-prisma/osticket-api-endpoints/compare/v2.6.0...HEAD
 [2.4.0]: https://github.com/markus-michalski/osticket-api-endpoints/releases/tag/v2.4.0
 [2.4.1]: https://github.com/studio-prisma/osticket-api-endpoints/releases/tag/v2.4.1
 [2.5.0]: https://github.com/studio-prisma/osticket-api-endpoints/releases/tag/v2.5.0
 [2.5.1]: https://github.com/studio-prisma/osticket-api-endpoints/releases/tag/v2.5.1
+[2.6.0]: https://github.com/studio-prisma/osticket-api-endpoints/releases/tag/v2.6.0

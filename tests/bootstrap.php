@@ -509,6 +509,9 @@ if (!class_exists('API')) {
                 'can_reply_tickets' => $this->permissions['can_reply_tickets'] ?? ($data['can_reply_tickets'] ?? false),
                 'can_manage_subtickets' => $this->permissions['can_manage_subtickets'] ?? ($data['can_manage_subtickets'] ?? false),
             ];
+            foreach (['can_create_tasks', 'can_update_tasks', 'can_read_tasks', 'can_search_tasks', 'can_delete_tasks'] as $column) {
+                $this->ht[$column] = $this->permissions[$column] ?? ($data[$column] ?? false);
+            }
         }
 
         public static function lookupKey($key) {

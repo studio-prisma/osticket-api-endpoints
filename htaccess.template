@@ -44,3 +44,18 @@ RewriteRule ^tickets-subtickets-parent\.php/ - [L]
 
 # Subticket Unlink API endpoint (path parameter: child ticket number)
 RewriteRule ^tickets-subtickets-unlink\.php/ - [L]
+
+# Task Get API endpoint (path parameter: task number)
+RewriteRule ^tickets-tasks-get\.php/ - [L]
+
+# Task Search API endpoint (no path parameter - uses query params + optional .json in PATH_INFO)
+RewriteRule ^tickets-tasks-search\.php.*$ - [L]
+
+# Task Create API endpoint (no path parameter - optional .json in PATH_INFO)
+RewriteRule ^tickets-tasks-create\.php.*$ - [L]
+
+# Task Update API endpoint (path parameter: task number)
+RewriteRule ^tickets-tasks-update\.php/ - [L]
+
+# Task Delete API endpoint (path parameter: task number)
+RewriteRule ^tickets-tasks-delete\.php/ - [L]

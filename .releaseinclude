@@ -36,6 +36,13 @@ api/tickets-subtickets-list.php
 api/tickets-subtickets-parent.php
 api/tickets-subtickets-unlink.php
 
+# API files (task endpoints)
+api/tickets-tasks-get.php
+api/tickets-tasks-search.php
+api/tickets-tasks-create.php
+api/tickets-tasks-update.php
+api/tickets-tasks-delete.php
+
 # Documentation
 README.md
 CHANGELOG.md
