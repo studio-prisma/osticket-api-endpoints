@@ -25,6 +25,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Nothing yet
 
+## [2.5.1] - 2026-11-01
+
+### Changed
+- "Reply as Agent" is a dropdown of the active agents instead of a text field, with "Off" as the empty choice. It still stores the username, so a username typed into 2.5.0 keeps working. The agent list is loaded only when the settings form is shown or saved, not on every request.
+
 ## [2.5.0] - 2026-11-01
 
 ### Added
@@ -261,7 +266,8 @@ Release of the studio-prisma fork on top of upstream [v2.4.0](https://github.com
 [2.3.2]: https://github.com/markus-michalski/osticket-api-endpoints/releases/tag/v2.3.2
 [2.3.3]: https://github.com/markus-michalski/osticket-api-endpoints/releases/tag/v2.3.3
 [2.3.4]: https://github.com/markus-michalski/osticket-api-endpoints/releases/tag/v2.3.4
-[Unreleased]: https://github.com/studio-prisma/osticket-api-endpoints/compare/v2.5.0...HEAD
+[Unreleased]: https://github.com/studio-prisma/osticket-api-endpoints/compare/v2.5.1...HEAD
 [2.4.0]: https://github.com/markus-michalski/osticket-api-endpoints/releases/tag/v2.4.0
 [2.4.1]: https://github.com/studio-prisma/osticket-api-endpoints/releases/tag/v2.4.1
 [2.5.0]: https://github.com/studio-prisma/osticket-api-endpoints/releases/tag/v2.5.0
+[2.5.1]: https://github.com/studio-prisma/osticket-api-endpoints/releases/tag/v2.5.1
