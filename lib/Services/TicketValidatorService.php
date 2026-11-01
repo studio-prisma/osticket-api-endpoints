@@ -395,12 +395,18 @@ class TicketValidatorService
             return true;
         }
 
-        // Method 2: Check via PluginManager
-        $markdownPlugin = PluginManager::getInstance()->getPlugin('markdown-support');
+        // Method 2: Check via PluginManager. Its API differs between
+        // osTicket versions (1.18 needs an install path), so any failure
+        // here means "not active" instead of breaking the request.
+        try {
+            $markdownPlugin = PluginManager::getInstance()->getPlugin('markdown-support');
 
-        return $markdownPlugin
-            && method_exists($markdownPlugin, 'isActive')
-            && $markdownPlugin->isActive();
+            return $markdownPlugin
+                && method_exists($markdownPlugin, 'isActive')
+                && $markdownPlugin->isActive();
+        } catch (Throwable $e) {
+            return false;
+        }
     }
 
     /**

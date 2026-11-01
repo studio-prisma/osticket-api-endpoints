@@ -20,6 +20,7 @@ if (!class_exists('TicketApiController')) {
 require_once __DIR__ . '/../lib/Services/TicketValidatorService.php';
 require_once __DIR__ . '/../lib/Services/PermissionChecker.php';
 require_once __DIR__ . '/../lib/Services/TicketService.php';
+require_once __DIR__ . '/../lib/Services/TaskService.php';
 require_once __DIR__ . '/../lib/Enums/Permission.php';
 
 /**
@@ -484,19 +485,133 @@ class ExtendedTicketApiController extends TicketApiController {
      */
     private function resolveReplyAgent(): Staff
     {
+        return $this->resolveConfiguredAgent(
+            'reply_agent',
+            'Customer replies are disabled: set "Reply as Agent" in the API Endpoints plugin settings',
+            'The configured reply agent does not exist or is inactive'
+        );
+    }
+
+    /**
+     * Look up the agent tasks are changed as ("Tasks as Agent" setting)
+     *
+     * @throws Exception If no agent is configured or it is inactive (403)
+     */
+    private function resolveTaskAgent(): Staff
+    {
+        return $this->resolveConfiguredAgent(
+            'task_agent',
+            'Task changes are disabled: set "Tasks as Agent" in the API Endpoints plugin settings',
+            'The configured task agent does not exist or is inactive'
+        );
+    }
+
+    /**
+     * Active agent stored (as username) in a plugin setting
+     *
+     * @throws Exception If the setting is empty or the agent unusable (403)
+     */
+    private function resolveConfiguredAgent(string $setting, string $disabled, string $unusable): Staff
+    {
         $configured = '';
         if (class_exists('ApiEndpointsPlugin') && is_array(ApiEndpointsPlugin::$cached_config)) {
-            $configured = trim((string)(ApiEndpointsPlugin::$cached_config['reply_agent'] ?? ''));
+            $configured = trim((string)(ApiEndpointsPlugin::$cached_config[$setting] ?? ''));
         }
         if ($configured === '') {
-            throw new Exception('Customer replies are disabled: set "Reply as Agent" in the API Endpoints plugin settings', 403);
+            throw new Exception($disabled, 403);
         }
 
         $staff = Staff::lookup($configured);
         if (!$staff || !$staff->isActive()) {
-            throw new Exception('The configured reply agent does not exist or is inactive', 403);
+            throw new Exception($unusable, 403);
         }
         return $staff;
+    }
+
+    // =========================================================================
+    // Tasks
+    // Reads need only the API key permission. Changes also run as the
+    // "Tasks as Agent", whose role osTicket checks per department.
+    // =========================================================================
+
+    /**
+     * Get a task with its thread
+     *
+     * @throws Exception 401 key/permission, 404 unknown task
+     */
+    public function getTask(string $number): array
+    {
+        $key = $this->requireApiKey();
+        if (!$key) {
+            throw new Exception('API key not authorized', 401);
+        }
+        $this->permissionChecker->require($key, Permission::ReadTasks, 'read tasks');
+
+        return TaskService::getInstance()->getTask($number);
+    }
+
+    /**
+     * Search tasks
+     *
+     * @throws Exception 401 key/permission, 400 invalid filter
+     */
+    public function searchTasks(array $params): array
+    {
+        $key = $this->requireApiKey();
+        if (!$key) {
+            throw new Exception('API key not authorized', 401);
+        }
+        $this->permissionChecker->require($key, Permission::SearchTasks, 'search tasks');
+
+        return TaskService::getInstance()->searchTasks($params);
+    }
+
+    /**
+     * Create a task
+     *
+     * @throws Exception 401 key/permission, 403 agent, 400 invalid input
+     */
+    public function createTask(array $data): array
+    {
+        $key = $this->requireApiKey();
+        if (!$key) {
+            throw new Exception('API key not authorized', 401);
+        }
+        $this->permissionChecker->require($key, Permission::CreateTasks, 'create tasks');
+
+        return TaskService::getInstance()->createTask($this->resolveTaskAgent(), $data);
+    }
+
+    /**
+     * Update a task
+     *
+     * @throws Exception 401 key/permission, 403 agent, 404 task, 400 invalid input
+     */
+    public function updateTask(string $number, array $data): array
+    {
+        $key = $this->requireApiKey();
+        if (!$key) {
+            throw new Exception('API key not authorized', 401);
+        }
+        $this->permissionChecker->require($key, Permission::UpdateTasks, 'update tasks');
+
+        return TaskService::getInstance()->updateTask($this->resolveTaskAgent(), $number, $data);
+    }
+
+    /**
+     * Delete a task
+     *
+     * @throws Exception 401 key/permission, 403 agent, 404 task
+     */
+    public function deleteTask(string $number, ?string $comments = null): array
+    {
+        $key = $this->requireApiKey();
+        if (!$key) {
+            throw new Exception('API key not authorized', 401);
+        }
+        $this->permissionChecker->require($key, Permission::DeleteTasks, 'delete tasks');
+
+        return TaskService::getInstance()->deleteTask($this->resolveTaskAgent(), $number, $comments);
     }
 
     /**

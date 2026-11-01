@@ -56,6 +56,7 @@ class ApiEndpointsPlugin extends Plugin {
             'enabled' => $config->get('enabled'),
             'require_markdown_plugin' => $config->get('require_markdown_plugin'),
             'reply_agent' => $config->get('reply_agent'),
+            'task_agent' => $config->get('task_agent'),
             'installed_version' => $config->get('installed_version')
         ];
 
@@ -549,6 +550,31 @@ class ApiEndpointsPlugin extends Plugin {
                 'name' => 'can_reply_tickets',
                 'definition' => 'TINYINT(1) UNSIGNED NOT NULL DEFAULT 0',
                 'after' => 'can_manage_subtickets'
+            ),
+            array(
+                'name' => 'can_create_tasks',
+                'definition' => 'TINYINT(1) UNSIGNED NOT NULL DEFAULT 0',
+                'after' => 'can_reply_tickets'
+            ),
+            array(
+                'name' => 'can_update_tasks',
+                'definition' => 'TINYINT(1) UNSIGNED NOT NULL DEFAULT 0',
+                'after' => 'can_create_tasks'
+            ),
+            array(
+                'name' => 'can_read_tasks',
+                'definition' => 'TINYINT(1) UNSIGNED NOT NULL DEFAULT 0',
+                'after' => 'can_update_tasks'
+            ),
+            array(
+                'name' => 'can_search_tasks',
+                'definition' => 'TINYINT(1) UNSIGNED NOT NULL DEFAULT 0',
+                'after' => 'can_read_tasks'
+            ),
+            array(
+                'name' => 'can_delete_tasks',
+                'definition' => 'TINYINT(1) UNSIGNED NOT NULL DEFAULT 0',
+                'after' => 'can_search_tasks'
             )
         );
 
@@ -610,6 +636,11 @@ class ApiEndpointsPlugin extends Plugin {
 
         // List of columns to remove (in reverse order of adding)
         $columnsToRemove = array(
+            'can_delete_tasks',
+            'can_search_tasks',
+            'can_read_tasks',
+            'can_update_tasks',
+            'can_create_tasks',
             'can_reply_tickets',
             'can_manage_subtickets',
             'can_read_stats',

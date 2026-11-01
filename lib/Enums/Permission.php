@@ -18,6 +18,11 @@ enum Permission: string
     case ReadStats = 'can_read_stats';
     case ManageSubtickets = 'can_manage_subtickets';
     case ReplyTickets = 'can_reply_tickets';
+    case CreateTasks = 'can_create_tasks';
+    case UpdateTasks = 'can_update_tasks';
+    case ReadTasks = 'can_read_tasks';
+    case SearchTasks = 'can_search_tasks';
+    case DeleteTasks = 'can_delete_tasks';
 
     /**
      * Get human-readable label for this permission
@@ -35,6 +40,11 @@ enum Permission: string
             self::ReadStats => 'Read Statistics',
             self::ManageSubtickets => 'Manage Subtickets',
             self::ReplyTickets => 'Reply to Customers',
+            self::CreateTasks => 'Create Tasks',
+            self::UpdateTasks => 'Update Tasks',
+            self::ReadTasks => 'Read Tasks',
+            self::SearchTasks => 'Search Tasks',
+            self::DeleteTasks => 'Delete Tasks',
         };
     }
 
@@ -54,6 +64,11 @@ enum Permission: string
             self::ReadStats => 'GET /tickets-stats',
             self::ManageSubtickets => 'Subticket Operations',
             self::ReplyTickets => 'POST /tickets-reply/:number',
+            self::CreateTasks => 'POST /tickets-tasks-create',
+            self::UpdateTasks => 'PATCH /tickets-tasks-update/:number',
+            self::ReadTasks => 'GET /tickets-tasks-get/:number',
+            self::SearchTasks => 'GET /tickets-tasks-search',
+            self::DeleteTasks => 'DELETE /tickets-tasks-delete/:number',
         };
     }
 
@@ -74,6 +89,11 @@ enum Permission: string
             self::ReadStats => 'read ticket statistics',
             self::ManageSubtickets => 'manage subtickets',
             self::ReplyTickets => 'reply to customers',
+            self::CreateTasks => 'create tasks',
+            self::UpdateTasks => 'update tasks',
+            self::ReadTasks => 'read tasks',
+            self::SearchTasks => 'search tasks',
+            self::DeleteTasks => 'delete tasks',
         });
     }
 
@@ -94,6 +114,7 @@ enum Permission: string
      * This matches the original fallback behavior in the controller:
      * - SearchTickets falls back to ReadTickets
      * - ReadStats falls back to ReadTickets
+     * - SearchTasks falls back to ReadTasks
      *
      * @return self|null
      */
@@ -102,6 +123,7 @@ enum Permission: string
         return match ($this) {
             self::SearchTickets => self::ReadTickets,
             self::ReadStats => self::ReadTickets,
+            self::SearchTasks => self::ReadTasks,
             default => null,
         };
     }

@@ -135,13 +135,21 @@ class ApiBootstrap
 
         // Check for JSON content type
         if (str_contains($contentType, 'application/json')) {
-            $body = file_get_contents('php://input');
+            $body = (string)file_get_contents('php://input');
+
+            // An optional body may be left out, even with a JSON content type
+            if (trim($body) === '' && !$required) {
+                return [];
+            }
 
             try {
                 $data = json_decode($body, true, self::MAX_JSON_DEPTH, JSON_THROW_ON_ERROR);
 
                 if (empty($data) && $required) {
                     self::sendErrorResponse(400, 'No data provided in JSON body');
+                }
+                if ($data !== null && !is_array($data)) {
+                    self::sendErrorResponse(400, 'JSON body must be an object');
                 }
 
                 return $data ?? [];
@@ -222,13 +230,14 @@ class ApiBootstrap
      * Execute callback with standardized error handling
      *
      * @param callable $callback Function to execute
+     * @param int $successCode HTTP status code of a successful response
      * @return void
      */
-    public function execute(callable $callback): void
+    public function execute(callable $callback, int $successCode = 200): void
     {
         try {
             $result = $callback();
-            $this->sendSuccessResponse($result);
+            $this->sendSuccessResponse($result, $successCode);
         } catch (Throwable $e) {
             $this->handleException($e);
         }
@@ -265,6 +274,15 @@ class ApiBootstrap
      */
     public function handleException(Throwable $e): never
     {
+        // PHP runtime errors (TypeError, ArgumentCountError, ...) are bugs,
+        // not client mistakes. Their messages contain server paths, so the
+        // client gets a generic 500 and the details go to the log.
+        if (!$e instanceof Exception) {
+            error_log(sprintf('[API-ENDPOINTS-ERROR] %s: %s in %s:%d',
+                get_class($e), $e->getMessage(), $e->getFile(), $e->getLine()));
+            self::sendErrorResponse(500, 'Internal server error');
+        }
+
         $code = $e->getCode();
 
         // Validate HTTP status code range
