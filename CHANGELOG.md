@@ -261,6 +261,7 @@ Release of the studio-prisma fork on top of upstream [v2.4.0](https://github.com
 [2.3.2]: https://github.com/markus-michalski/osticket-api-endpoints/releases/tag/v2.3.2
 [2.3.3]: https://github.com/markus-michalski/osticket-api-endpoints/releases/tag/v2.3.3
 [2.3.4]: https://github.com/markus-michalski/osticket-api-endpoints/releases/tag/v2.3.4
-[Unreleased]: https://github.com/studio-prisma/osticket-api-endpoints/compare/v2.4.1...HEAD
+[Unreleased]: https://github.com/studio-prisma/osticket-api-endpoints/compare/v2.5.0...HEAD
 [2.4.0]: https://github.com/markus-michalski/osticket-api-endpoints/releases/tag/v2.4.0
 [2.4.1]: https://github.com/studio-prisma/osticket-api-endpoints/releases/tag/v2.4.1
+[2.5.0]: https://github.com/studio-prisma/osticket-api-endpoints/releases/tag/v2.5.0
