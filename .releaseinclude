@@ -28,6 +28,7 @@ api/tickets-update.php
 api/tickets-delete.php
 api/tickets-stats.php
 api/tickets-statuses.php
+api/tickets-reply.php
 
 # API files (subticket endpoints)
 api/tickets-subtickets-create.php

@@ -65,7 +65,7 @@ class ApiEndpointsConfig extends PluginConfig {
                 'default' => '',
                 'configuration' => array(
                     'html' => true,
-                    'content' => '<div style="background: #f5f5f5; padding: 15px; border-left: 4px solid #2196F3; margin: 10px 0;"><p style="margin: 0 0 10px 0;"><strong>The following API endpoints are available:</strong></p><ul style="margin: 5px 0; padding-left: 20px; list-style: none;"><li style="margin: 5px 0;">✓ <strong>POST /tickets</strong> - Create tickets with format (markdown/html/text) and department<br><span style="color: #666; font-size: 11px;">Controlled by: <code>can_create_tickets</code> permission</span></li><li style="margin: 5px 0;">✓ <strong>PATCH/PUT /tickets/:id</strong> - Update tickets (department, topic, parent, priority, status, SLA, staff)<br><span style="color: #666; font-size: 11px;">Controlled by: <code>can_update_tickets</code> permission</span></li><li style="margin: 5px 0;">✓ <strong>GET /tickets-get.php/:number</strong> - Retrieve ticket by number with full details and thread<br><span style="color: #666; font-size: 11px;">Controlled by: <code>can_read_tickets</code> permission</span></li><li style="margin: 5px 0;">✓ <strong>GET /tickets-search.php</strong> - Search tickets by query, status, department with pagination<br><span style="color: #666; font-size: 11px;">Controlled by: <code>can_search_tickets</code> permission</span></li><li style="margin: 5px 0;">✓ <strong>DELETE /tickets-delete.php/:number</strong> - Delete tickets with cascading cleanup<br><span style="color: #666; font-size: 11px;">Controlled by: <code>can_delete_tickets</code> permission</span></li><li style="margin: 5px 0;">✓ <strong>GET /tickets-stats.php</strong> - Retrieve ticket statistics for dashboards and reporting<br><span style="color: #666; font-size: 11px;">Controlled by: <code>can_read_stats</code> permission</span></li><li style="margin: 5px 0;">✓ <strong>Subticket Operations</strong> - Manage parent-child ticket relationships (get parent, list children, create/unlink)<br><span style="color: #666; font-size: 11px;">Controlled by: <code>can_manage_subtickets</code> permission (requires Subticket Manager Plugin)</span></li></ul><p style="margin: 15px 0 0 0; padding: 10px; background: #fff3e0; border-left: 3px solid #ff9800; font-size: 13px;"><strong>⚠ Important:</strong> Access to these endpoints is controlled individually per API Key using the permissions below.</p></div>'
+                    'content' => '<div style="background: #f5f5f5; padding: 15px; border-left: 4px solid #2196F3; margin: 10px 0;"><p style="margin: 0 0 10px 0;"><strong>The following API endpoints are available:</strong></p><ul style="margin: 5px 0; padding-left: 20px; list-style: none;"><li style="margin: 5px 0;">✓ <strong>POST /tickets</strong> - Create tickets with format (markdown/html/text) and department<br><span style="color: #666; font-size: 11px;">Controlled by: <code>can_create_tickets</code> permission</span></li><li style="margin: 5px 0;">✓ <strong>PATCH/PUT /tickets/:id</strong> - Update tickets (department, topic, parent, priority, status, SLA, staff)<br><span style="color: #666; font-size: 11px;">Controlled by: <code>can_update_tickets</code> permission</span></li><li style="margin: 5px 0;">✓ <strong>GET /tickets-get.php/:number</strong> - Retrieve ticket by number with full details and thread<br><span style="color: #666; font-size: 11px;">Controlled by: <code>can_read_tickets</code> permission</span></li><li style="margin: 5px 0;">✓ <strong>GET /tickets-search.php</strong> - Search tickets by query, status, department with pagination<br><span style="color: #666; font-size: 11px;">Controlled by: <code>can_search_tickets</code> permission</span></li><li style="margin: 5px 0;">✓ <strong>DELETE /tickets-delete.php/:number</strong> - Delete tickets with cascading cleanup<br><span style="color: #666; font-size: 11px;">Controlled by: <code>can_delete_tickets</code> permission</span></li><li style="margin: 5px 0;">✓ <strong>GET /tickets-stats.php</strong> - Retrieve ticket statistics for dashboards and reporting<br><span style="color: #666; font-size: 11px;">Controlled by: <code>can_read_stats</code> permission</span></li><li style="margin: 5px 0;">✓ <strong>Subticket Operations</strong> - Manage parent-child ticket relationships (get parent, list children, create/unlink)<br><span style="color: #666; font-size: 11px;">Controlled by: <code>can_manage_subtickets</code> permission (requires Subticket Manager Plugin)</span></li><li style="margin: 5px 0;">✓ <strong>POST /tickets-reply.php/:number</strong> - Reply to the customer (public reply, sends the reply email)<br><span style="color: #666; font-size: 11px;">Controlled by: <code>can_reply_tickets</code> permission and the "Reply as Agent" setting</span></li></ul><p style="margin: 15px 0 0 0; padding: 10px; background: #fff3e0; border-left: 3px solid #ff9800; font-size: 13px;"><strong>⚠ Important:</strong> Access to these endpoints is controlled individually per API Key using the permissions below.</p></div>'
                 )
             )),
 
@@ -108,6 +108,23 @@ class ApiEndpointsConfig extends PluginConfig {
                 'default' => false // Lenient by default
             )),
 
+            // Section: Customer Replies
+            'section_reply' => new SectionBreakField(array(
+                'label' => $__('Customer Replies'),
+            )),
+
+            'reply_agent' => new TextboxField(array(
+                'id' => 'reply_agent',
+                'label' => $__('Reply as Agent'),
+                'configuration' => array(
+                    'desc' => $__('Username of the agent that replies posted via POST /api/tickets-reply.php are sent as. The agent must be active and allowed to reply in the ticket\'s department. Empty disables the endpoint, regardless of the can_reply_tickets permission.'),
+                    'size' => 32,
+                    'length' => 64
+                ),
+                'default' => '',
+                'required' => false
+            )),
+
             // Installed version (for auto-update tracking)
             'installed_version' => new TextboxField(array(
                 'id' => 'installed_version',
@@ -137,7 +154,8 @@ class ApiEndpointsConfig extends PluginConfig {
             'can_search_tickets',
             'can_delete_tickets',
             'can_read_stats',
-            'can_manage_subtickets'
+            'can_manage_subtickets',
+            'can_reply_tickets'
         );
     }
 
@@ -166,7 +184,8 @@ class ApiEndpointsConfig extends PluginConfig {
             'can_search_tickets',
             'can_delete_tickets',
             'can_read_stats',
-            'can_manage_subtickets'
+            'can_manage_subtickets',
+            'can_reply_tickets'
         );
 
         // Validate column name against whitelist
@@ -193,7 +212,7 @@ class ApiEndpointsConfig extends PluginConfig {
      */
     function pre_save(&$config = [], &$errors = []) {
         // Handle API Key permissions from $_POST (not in $config because FreeTextField doesn't register fields)
-        if (isset($_POST['api_key_create_permissions']) || isset($_POST['api_key_update_permissions']) || isset($_POST['api_key_read_permissions']) || isset($_POST['api_key_search_permissions']) || isset($_POST['api_key_delete_permissions']) || isset($_POST['api_key_subticket_permissions'])) {
+        if (isset($_POST['api_key_create_permissions']) || isset($_POST['api_key_update_permissions']) || isset($_POST['api_key_read_permissions']) || isset($_POST['api_key_search_permissions']) || isset($_POST['api_key_delete_permissions']) || isset($_POST['api_key_subticket_permissions']) || isset($_POST['api_key_reply_permissions'])) {
             // Check which permission columns exist using helper method
             $hasUpdateColumn = $this->columnExists('can_update_tickets');
             $hasReadColumn = $this->columnExists('can_read_tickets');
@@ -201,6 +220,7 @@ class ApiEndpointsConfig extends PluginConfig {
             $hasDeleteColumn = $this->columnExists('can_delete_tickets');
             $hasStatsColumn = $this->columnExists('can_read_stats');
             $hasSubticketColumn = $this->columnExists('can_manage_subtickets');
+            $hasReplyColumn = $this->columnExists('can_reply_tickets');
 
             // Get all API keys
             $result = db_query('SELECT id FROM ' . API_KEY_TABLE);
@@ -227,6 +247,10 @@ class ApiEndpointsConfig extends PluginConfig {
                 ? $_POST['api_key_subticket_permissions']
                 : array();
 
+            $replyPermissions = isset($_POST['api_key_reply_permissions'])
+                ? $_POST['api_key_reply_permissions']
+                : array();
+
             while ($row = db_fetch_array($result)) {
                 $apiKeyId = (int)$row['id'];
 
@@ -238,6 +262,7 @@ class ApiEndpointsConfig extends PluginConfig {
                 $canDelete = isset($deletePermissions[$apiKeyId]) ? 1 : 0;
                 $canStats = isset($statsPermissions[$apiKeyId]) ? 1 : 0;
                 $canSubticket = isset($subticketPermissions[$apiKeyId]) ? 1 : 0;
+                $canReply = isset($replyPermissions[$apiKeyId]) ? 1 : 0;
 
                 // Build UPDATE SQL with validated columns and escaped values
                 // Using backticks for column names and casting values to int for SQL safety
@@ -264,6 +289,10 @@ class ApiEndpointsConfig extends PluginConfig {
                 }
                 if ($hasSubticketColumn) {
                     $setClauses[] = sprintf('`can_manage_subtickets` = %d', (int)$canSubticket);
+                }
+
+                if ($hasReplyColumn) {
+                    $setClauses[] = sprintf('`can_reply_tickets` = %d', (int)$canReply);
                 }
 
                 // Execute UPDATE with properly validated and escaped values
@@ -299,6 +328,7 @@ class ApiEndpointsConfig extends PluginConfig {
         $hasDeleteColumn = self::columnExistsStatic('can_delete_tickets');
         $hasStatsColumn = self::columnExistsStatic('can_read_stats');
         $hasSubticketColumn = self::columnExistsStatic('can_manage_subtickets');
+        $hasReplyColumn = self::columnExistsStatic('can_reply_tickets');
 
         // Query all API keys (conditionally include columns)
         $columns = 'id, ipaddr, apikey, isactive, can_create_tickets';
@@ -308,6 +338,7 @@ class ApiEndpointsConfig extends PluginConfig {
         if ($hasDeleteColumn) $columns .= ', can_delete_tickets';
         if ($hasStatsColumn) $columns .= ', can_read_stats';
         if ($hasSubticketColumn) $columns .= ', can_manage_subtickets';
+        if ($hasReplyColumn) $columns .= ', can_reply_tickets';
         $columns .= ', created, updated';
 
         $sql = "SELECT $columns FROM " . API_KEY_TABLE . " ORDER BY created DESC";
@@ -379,6 +410,7 @@ class ApiEndpointsConfig extends PluginConfig {
             $canDelete = ($hasDeleteColumn && isset($row['can_delete_tickets'])) ? (int)$row['can_delete_tickets'] : 0;
             $canStats = ($hasStatsColumn && isset($row['can_read_stats'])) ? (int)$row['can_read_stats'] : 0;
             $canSubticket = ($hasSubticketColumn && isset($row['can_manage_subtickets'])) ? (int)$row['can_manage_subtickets'] : 0;
+            $canReply = ($hasReplyColumn && isset($row['can_reply_tickets'])) ? (int)$row['can_reply_tickets'] : 0;
             $created = htmlspecialchars($row['created']);
 
             $statusClass = $isActive ? 'status-active' : 'status-inactive';
@@ -487,6 +519,20 @@ class ApiEndpointsConfig extends PluginConfig {
                 $html .= '<label for="subticket_' . $apiKeyId . '">';
                 $html .= '<strong>Manage Subtickets</strong>';
                 $html .= '<span class="permission-endpoint">Subticket Operations</span>';
+                $html .= '</label>';
+                $html .= '</div>';
+            }
+
+            // Permission: Reply to Customers (only if column exists)
+            // Sends an email to the customer, so it is never implied by Update Tickets
+            if ($hasReplyColumn) {
+                $html .= '<div class="permission-item">';
+                $html .= '<input type="checkbox" name="api_key_reply_permissions[' . $apiKeyId . ']" ' .
+                         'value="1" class="permission-checkbox" id="reply_' . $apiKeyId . '" ' .
+                         ($canReply ? 'checked' : '') . ' />';
+                $html .= '<label for="reply_' . $apiKeyId . '">';
+                $html .= '<strong>Reply to Customers</strong>';
+                $html .= '<span class="permission-endpoint">POST /tickets-reply/:number (emails the customer)</span>';
                 $html .= '</label>';
                 $html .= '</div>';
             }

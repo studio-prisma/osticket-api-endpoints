@@ -30,6 +30,9 @@ RewriteRule ^tickets-attachment-download\.php/ - [L]
 # Tickets Update API endpoint (path parameter: ticket number)
 RewriteRule ^tickets-update\.php/ - [L]
 
+# Tickets Reply API endpoint (path parameter: ticket number)
+RewriteRule ^tickets-reply\.php/ - [L]
+
 # Subticket Create API endpoint (path parameter: parent ticket number)
 RewriteRule ^tickets-subtickets-create\.php/ - [L]
 

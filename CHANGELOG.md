@@ -25,6 +25,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Nothing yet
 
+## [2.5.0] - 2026-11-01
+
+### Added
+- `POST /api/tickets-reply.php/{number}.json` posts a public reply to the customer. osTicket emails it to the recipients like a reply from the staff UI: department template, signature, sender name. Options: `format` (`text` or `html`), `replyTo` (`all` or `user`), `signature` (`mine`, `dept` or `none`), `alert` (`false` posts without email). Returns JSON with ticket number, thread entry ID and the agent name.
+- New permission `can_reply_tickets` (column added on update, checkbox in the plugin's permission table). `can_update_tickets` does not imply it.
+- New setting "Reply as Agent": username, email or ID of the agent replies are posted as. Empty keeps the endpoint off. The agent must be active and allowed to reply in the ticket's department, otherwise 403.
+
+### Security
+- A reply email cannot be recalled, so the endpoint is off by default twice: no API key has the permission, and no agent is set. Replies never assign the ticket (`claim=false`) and are capped at 65535 bytes. Markdown is rejected because the Markdown Support plugin does not convert JSON requests for the email, and the customer would receive raw Markdown.
+
 ## [2.4.1] - 2026-10-31
 
 ### Fixed
@@ -251,6 +261,7 @@ Release of the studio-prisma fork on top of upstream [v2.4.0](https://github.com
 [2.3.2]: https://github.com/markus-michalski/osticket-api-endpoints/releases/tag/v2.3.2
 [2.3.3]: https://github.com/markus-michalski/osticket-api-endpoints/releases/tag/v2.3.3
 [2.3.4]: https://github.com/markus-michalski/osticket-api-endpoints/releases/tag/v2.3.4
-[Unreleased]: https://github.com/studio-prisma/osticket-api-endpoints/compare/v2.4.1...HEAD
+[Unreleased]: https://github.com/studio-prisma/osticket-api-endpoints/compare/v2.5.0...HEAD
 [2.4.0]: https://github.com/markus-michalski/osticket-api-endpoints/releases/tag/v2.4.0
 [2.4.1]: https://github.com/studio-prisma/osticket-api-endpoints/releases/tag/v2.4.1
+[2.5.0]: https://github.com/studio-prisma/osticket-api-endpoints/releases/tag/v2.5.0
