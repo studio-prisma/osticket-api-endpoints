@@ -153,6 +153,52 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+  /tickets-reply.php/{number}.{format}:
+    post:
+      operationId: replyToTicket
+      summary: Reply to the customer
+      description: |
+        Post a public reply. Unlike the internal note of `tickets-update.php`,
+        the customer sees it, and osTicket emails it to the recipients unless
+        `alert` is `false`. A sent email cannot be recalled.
+
+        Requires the `can_reply_tickets` permission, which `can_update_tickets`
+        does not imply, and the "Reply as Agent" plugin setting. The reply is
+        posted as that agent: the agent must be active and allowed to reply in
+        the ticket's department. API replies never assign the ticket.
+
+        Markdown is not accepted. Use `text` (line breaks are kept) or `html`.
+      tags:
+        - Ticket Management
+      parameters:
+        - $ref: '#/components/parameters/ticketNumber'
+        - $ref: '#/components/parameters/responseFormat'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReplyTicketRequest'
+      responses:
+        '200':
+          description: Reply posted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReplyTicketResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: No reply agent configured, agent inactive, or agent not allowed to reply to this ticket
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
   /tickets-search.php:
     get:
       operationId: searchTickets
@@ -853,6 +899,52 @@ components:
             type: object
             additionalProperties:
               type: string
+
+    ReplyTicketRequest:
+      type: object
+      required:
+        - response
+      properties:
+        response:
+          type: string
+          maxLength: 65535
+          description: Reply text (at most 65535 bytes)
+        format:
+          type: string
+          enum: [text, html]
+          default: text
+        replyTo:
+          type: string
+          enum: [all, user]
+          default: all
+          description: '`all` = owner and active collaborators, `user` = owner only'
+        signature:
+          type: string
+          enum: [mine, dept, none]
+          default: mine
+          description: Signature of the reply agent, of the department, or none
+        alert:
+          type: boolean
+          default: true
+          description: Send the reply email. `false` posts the reply without email.
+
+    ReplyTicketResponse:
+      type: object
+      properties:
+        ticket:
+          type: string
+          examples:
+            - '781258'
+        entryId:
+          type: integer
+          description: ID of the new thread entry
+        alerted:
+          type: boolean
+        replyTo:
+          type: string
+        agent:
+          type: string
+          description: Name of the agent the reply was posted as
 
     # =========================================================================
     # Ticket Response Objects

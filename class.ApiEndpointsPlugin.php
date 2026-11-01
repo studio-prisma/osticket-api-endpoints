@@ -55,6 +55,7 @@ class ApiEndpointsPlugin extends Plugin {
         self::$cached_config = [
             'enabled' => $config->get('enabled'),
             'require_markdown_plugin' => $config->get('require_markdown_plugin'),
+            'reply_agent' => $config->get('reply_agent'),
             'installed_version' => $config->get('installed_version')
         ];
 
@@ -543,6 +544,11 @@ class ApiEndpointsPlugin extends Plugin {
                 'name' => 'can_manage_subtickets',
                 'definition' => 'TINYINT(1) UNSIGNED NOT NULL DEFAULT 0',
                 'after' => 'can_read_stats'
+            ),
+            array(
+                'name' => 'can_reply_tickets',
+                'definition' => 'TINYINT(1) UNSIGNED NOT NULL DEFAULT 0',
+                'after' => 'can_manage_subtickets'
             )
         );
 
@@ -604,6 +610,7 @@ class ApiEndpointsPlugin extends Plugin {
 
         // List of columns to remove (in reverse order of adding)
         $columnsToRemove = array(
+            'can_reply_tickets',
             'can_manage_subtickets',
             'can_read_stats',
             'can_delete_tickets',

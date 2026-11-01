@@ -365,6 +365,140 @@ class ExtendedTicketApiController extends TicketApiController {
         return $ticket;
     }
 
+    /** Maximum reply size in bytes (thread entry body is a TEXT column) */
+    public const REPLY_MAX_BYTES = 65535;
+
+    /**
+     * Post a public reply to the customer
+     *
+     * Unlike the internal note in update(), a reply is visible to the
+     * customer and osTicket emails it to the recipients. It cannot be
+     * recalled. That is why it needs its own permission (can_reply_tickets,
+     * never implied by can_update_tickets) and an agent configured in the
+     * plugin settings ("Reply as Agent"). The reply is posted as that agent,
+     * with the same department, role and signature rules as in the staff UI.
+     *
+     * Markdown is not accepted: the Markdown Support plugin converts replies
+     * for the email from $_POST at bootstrap, which a JSON request never
+     * fills, so the customer would receive raw Markdown.
+     *
+     * @param string $ticketNumber Ticket number
+     * @param array $data Reply data:
+     *   - response  (string, required) Reply text
+     *   - format    (string) 'text' (default) or 'html'
+     *   - replyTo   (string) 'all' (default, owner + active collaborators) or 'user' (owner only)
+     *   - signature (string) 'mine' (default), 'dept' or 'none'
+     *   - alert     (bool)   Send the reply email (default true)
+     * @return array Ticket number, thread entry ID and what was sent
+     * @throws Exception 400 invalid input, 401 key or permission, 403 agent, 404 ticket
+     */
+    public function reply(string $ticketNumber, array $data): array
+    {
+        $key = $this->requireApiKey();
+        if (!$key) {
+            throw new Exception('API key not authorized', 401);
+        }
+        $this->permissionChecker->require($key, Permission::ReplyTickets, 'reply to customers');
+
+        $ticket = Ticket::lookupByNumber($ticketNumber);
+        if (!$ticket) {
+            throw new Exception('Ticket not found', 404);
+        }
+
+        $text = $data['response'] ?? null;
+        if (!is_string($text) || trim($text) === '') {
+            throw new Exception('response is required', 400);
+        }
+        if (strlen($text) > self::REPLY_MAX_BYTES) {
+            throw new Exception(sprintf('response exceeds %d bytes', self::REPLY_MAX_BYTES), 400);
+        }
+
+        $format = $this->replyOption($data, 'format', ['text', 'html'], 'text');
+        $replyTo = $this->replyOption($data, 'replyTo', ['all', 'user'], 'all');
+        $signature = $this->replyOption($data, 'signature', ['mine', 'dept', 'none'], 'mine');
+
+        $alert = $data['alert'] ?? true;
+        if (!is_bool($alert)) {
+            throw new Exception('alert must be true or false', 400);
+        }
+
+        $staff = $this->resolveReplyAgent();
+        if (!$ticket->checkStaffPerm($staff, Ticket::PERM_REPLY)) {
+            throw new Exception('The reply agent is not allowed to reply to this ticket', 403);
+        }
+
+        $vars = [
+            'response' => $format === 'html'
+                ? new HtmlThreadEntryBody($text)
+                : new TextThreadEntryBody($text),
+            'reply-to' => $replyTo,
+            'signature' => $signature,
+            'staffId' => $staff->getId(),
+            'poster' => $staff,
+        ];
+
+        // postReply() takes signature, sender name and template variables
+        // from the global agent, like a reply typed in the staff UI.
+        global $thisstaff;
+        $previousStaff = $thisstaff;
+        $thisstaff = $staff;
+        $errors = [];
+        try {
+            // claim=false: an API reply must not assign the ticket
+            $entry = $ticket->postReply($vars, $errors, $alert, false);
+        } finally {
+            $thisstaff = $previousStaff;
+        }
+
+        if (!$entry) {
+            throw new Exception('Failed to post reply: ' . implode(', ', $errors), 400);
+        }
+
+        return [
+            'ticket' => $ticket->getNumber(),
+            'entryId' => (int)$entry->getId(),
+            'alerted' => $alert,
+            'replyTo' => $replyTo,
+            'agent' => (string)$staff->getName(),
+        ];
+    }
+
+    /**
+     * Read an enumerated reply option, falling back to its default
+     *
+     * @throws Exception If the value is not one of $allowed (400)
+     */
+    private function replyOption(array $data, string $name, array $allowed, string $default): string
+    {
+        $value = $data[$name] ?? $default;
+        if (!is_string($value) || !in_array($value, $allowed, true)) {
+            throw new Exception(sprintf('%s must be one of: %s', $name, implode(', ', $allowed)), 400);
+        }
+        return $value;
+    }
+
+    /**
+     * Look up the agent replies are posted as ("Reply as Agent" setting)
+     *
+     * @throws Exception If no agent is configured or it is inactive (403)
+     */
+    private function resolveReplyAgent(): Staff
+    {
+        $configured = '';
+        if (class_exists('ApiEndpointsPlugin') && is_array(ApiEndpointsPlugin::$cached_config)) {
+            $configured = trim((string)(ApiEndpointsPlugin::$cached_config['reply_agent'] ?? ''));
+        }
+        if ($configured === '') {
+            throw new Exception('Customer replies are disabled: set "Reply as Agent" in the API Endpoints plugin settings', 403);
+        }
+
+        $staff = Staff::lookup($configured);
+        if (!$staff || !$staff->isActive()) {
+            throw new Exception('The configured reply agent does not exist or is inactive', 403);
+        }
+        return $staff;
+    }
+
     /**
      * Set the ticket priority.
      *

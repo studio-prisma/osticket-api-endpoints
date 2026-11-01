@@ -429,8 +429,57 @@ if (!class_exists('Ticket')) {
             $this->lastNoteTitle = $vars['title'] ?? 'API Update';
             return true; // Success
         }
+
+        // Mock methods for public replies
+        const PERM_REPLY = 'ticket.reply';
+
+        /** Staff IDs allowed to reply (empty = everyone) */
+        public $replyStaffIds = [];
+        public $replyErrors = [];
+        public $lastReplyVars = null;
+        public $lastReplyAlert = null;
+        public $lastReplyClaim = null;
+        public $lastReplyGlobalStaff = null;
+
+        public function checkStaffPerm($staff, $perm = null) {
+            return !$this->replyStaffIds
+                || in_array($staff->getId(), $this->replyStaffIds, true);
+        }
+
+        public function postReply($vars, &$errors, $alert = true, $claim = true) {
+            global $thisstaff;
+            $this->lastReplyVars = $vars;
+            $this->lastReplyAlert = $alert;
+            $this->lastReplyClaim = $claim;
+            $this->lastReplyGlobalStaff = $thisstaff;
+            if ($this->replyErrors) {
+                $errors = $this->replyErrors;
+                return null;
+            }
+            return new ThreadEntry(['id' => 4711, 'type' => 'R']);
+        }
     }
 }
+
+// Mock thread entry bodies
+if (!class_exists('ThreadEntryBody')) {
+    class ThreadEntryBody {
+        public $body;
+        public $type;
+
+        public function __construct($body, $type = 'text') {
+            $this->body = $body;
+            $this->type = $type;
+        }
+    }
+    class TextThreadEntryBody extends ThreadEntryBody {
+        public function __construct($body) { parent::__construct($body, 'text'); }
+    }
+    class HtmlThreadEntryBody extends ThreadEntryBody {
+        public function __construct($body) { parent::__construct($body, 'html'); }
+    }
+}
+
 
 if (!class_exists('API')) {
     class API {
@@ -457,6 +506,7 @@ if (!class_exists('API')) {
                 'can_search_tickets' => $this->permissions['can_search_tickets'] ?? ($data['can_search_tickets'] ?? false),
                 'can_delete_tickets' => $this->permissions['can_delete_tickets'] ?? ($data['can_delete_tickets'] ?? false),
                 'can_read_stats' => $this->permissions['can_read_stats'] ?? ($data['can_read_stats'] ?? false),
+                'can_reply_tickets' => $this->permissions['can_reply_tickets'] ?? ($data['can_reply_tickets'] ?? false),
                 'can_manage_subtickets' => $this->permissions['can_manage_subtickets'] ?? ($data['can_manage_subtickets'] ?? false),
             ];
         }

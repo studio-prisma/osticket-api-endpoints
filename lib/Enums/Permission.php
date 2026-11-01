@@ -17,6 +17,7 @@ enum Permission: string
     case DeleteTickets = 'can_delete_tickets';
     case ReadStats = 'can_read_stats';
     case ManageSubtickets = 'can_manage_subtickets';
+    case ReplyTickets = 'can_reply_tickets';
 
     /**
      * Get human-readable label for this permission
@@ -33,6 +34,7 @@ enum Permission: string
             self::DeleteTickets => 'Delete Tickets',
             self::ReadStats => 'Read Statistics',
             self::ManageSubtickets => 'Manage Subtickets',
+            self::ReplyTickets => 'Reply to Customers',
         };
     }
 
@@ -51,6 +53,7 @@ enum Permission: string
             self::DeleteTickets => 'DELETE /tickets/:number',
             self::ReadStats => 'GET /tickets-stats',
             self::ManageSubtickets => 'Subticket Operations',
+            self::ReplyTickets => 'POST /tickets-reply/:number',
         };
     }
 
@@ -70,6 +73,7 @@ enum Permission: string
             self::DeleteTickets => 'delete tickets',
             self::ReadStats => 'read ticket statistics',
             self::ManageSubtickets => 'manage subtickets',
+            self::ReplyTickets => 'reply to customers',
         });
     }
 
