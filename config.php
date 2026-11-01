@@ -113,17 +113,26 @@ class ApiEndpointsConfig extends PluginConfig {
                 'label' => $__('Customer Replies'),
             )),
 
-            'reply_agent' => new TextboxField(array(
+            // Stores the agent's username. The agent list is loaded only when
+            // the choices are needed (form render, save): PluginConfig builds
+            // these fields on every request, the API calls included.
+            'reply_agent' => new class(array(
                 'id' => 'reply_agent',
                 'label' => $__('Reply as Agent'),
                 'configuration' => array(
-                    'desc' => $__('Username of the agent that replies posted via POST /api/tickets-reply.php are sent as. The agent must be active and allowed to reply in the ticket\'s department. Empty disables the endpoint, regardless of the can_reply_tickets permission.'),
-                    'size' => 32,
-                    'length' => 64
+                    'desc' => $__('Agent that replies posted via POST /api/tickets-reply.php are sent as. The agent must be allowed to reply in the ticket\'s department. "Off" disables the endpoint, regardless of the can_reply_tickets permission.'),
+                    'prompt' => $__('Off: no customer replies')
                 ),
                 'default' => '',
                 'required' => false
-            )),
+            )) extends ChoiceField {
+                function getChoices($verbose = false, $options = array()) {
+                    if ($this->_choices === null) {
+                        $this->_choices = ApiEndpointsConfig::activeAgentChoices();
+                    }
+                    return $this->_choices;
+                }
+            },
 
             // Installed version (for auto-update tracking)
             'installed_version' => new TextboxField(array(
@@ -139,6 +148,33 @@ class ApiEndpointsConfig extends PluginConfig {
                 'required' => false
             ))
         );
+    }
+
+    /**
+     * Active agents for the "Reply as Agent" dropdown
+     *
+     * Keyed by username, which is what the reply endpoint looks up.
+     * Inactive agents are left out: the endpoint would refuse them anyway.
+     *
+     * @return array<string, string> username => "Name (username)"
+     */
+    static function activeAgentChoices() {
+        $choices = array();
+        try {
+            $agents = Staff::objects()
+                ->filter(array('isactive' => 1))
+                ->order_by('lastname', 'firstname');
+            foreach ($agents as $agent) {
+                $username = (string)$agent->getUserName();
+                if ($username === '') {
+                    continue;
+                }
+                $choices[$username] = sprintf('%s (%s)', (string)$agent->getName(), $username);
+            }
+        } catch (Throwable $e) {
+            error_log('[API Endpoints] Could not load agents for "Reply as Agent": ' . $e->getMessage());
+        }
+        return $choices;
     }
 
     /**
