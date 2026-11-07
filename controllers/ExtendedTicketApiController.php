@@ -195,6 +195,10 @@ class ExtendedTicketApiController extends TicketApiController {
      * Allows updating ticket properties that can't be set during creation
      * due to osTicket's internal rules (e.g., Topic overriding departmentId)
      *
+     * `subject` renames the ticket. It is validated before any other change
+     * (non-empty single line, no HTML, form-configured length) and logged as
+     * an "edited" thread event, as in the staff UI.
+     *
      * @param string $ticketNumber Ticket number
      * @param array $data Update data
      * @param bool $skipPermissionCheck Skip permission check (internal calls only)
@@ -220,7 +224,20 @@ class ExtendedTicketApiController extends TicketApiController {
             throw new Exception('Ticket not found', 404);
         }
 
+        // Validate the subject before the first change, so a bad subject
+        // does not leave the ticket half updated.
+        $subject = array_key_exists('subject', $data)
+            ? $this->validateSubject($data['subject'])
+            : null;
+
         $updated = false;
+
+        // Update subject if provided (answer of the ticket form, like the staff UI)
+        if ($subject !== null && $subject !== (string)$ticket->getSubject()) {
+            if ($this->setTicketSubject($ticket, $subject)) {
+                $updated = true;
+            }
+        }
 
         // Update departmentId if provided
         if (isset($data['departmentId'])) {
@@ -638,6 +655,95 @@ class ExtendedTicketApiController extends TicketApiController {
         }
 
         throw new Exception('Ticket has no priority field', 400);
+    }
+
+    /** Subject length when the ticket form does not configure one */
+    public const SUBJECT_DEFAULT_LENGTH = 255;
+
+    /**
+     * Validated subject: a non-empty single line of plain text
+     *
+     * The limit is the length configured on the subject field of the ticket
+     * form (Admin > Manage > Forms > Ticket Details), so the API accepts
+     * what the staff UI accepts. HTML is refused rather than stripped: the
+     * caller should see that the subject would not be stored as sent.
+     *
+     * @throws Exception 400 on invalid input
+     */
+    public function validateSubject(mixed $subject): string
+    {
+        if (!is_string($subject)) {
+            throw new Exception('subject must be a string', 400);
+        }
+        $subject = trim($subject);
+        if ($subject === '') {
+            throw new Exception('subject must not be empty', 400);
+        }
+        if (!mb_check_encoding($subject, 'UTF-8')) {
+            throw new Exception('subject must be valid UTF-8', 400);
+        }
+        if (preg_match('/[\p{Cc}\x{2028}\x{2029}]/u', $subject)) {
+            throw new Exception('subject must be a single line without control characters', 400);
+        }
+        if (strip_tags($subject) !== $subject) {
+            throw new Exception('subject must not contain HTML', 400);
+        }
+        $max = $this->subjectMaxLength();
+        if (mb_strlen($subject) > $max) {
+            throw new Exception(sprintf('subject exceeds %d characters', $max), 400);
+        }
+        return $subject;
+    }
+
+    /**
+     * Length configured on the ticket form's subject field
+     */
+    private function subjectMaxLength(): int
+    {
+        if (class_exists('TicketForm')
+            && ($form = TicketForm::getInstance())
+            && ($field = $form->getField('subject'))
+        ) {
+            $config = $field->getConfiguration();
+            if (!empty($config['length']) && (int)$config['length'] > 0) {
+                return (int)$config['length'];
+            }
+        }
+        return self::SUBJECT_DEFAULT_LENGTH;
+    }
+
+    /**
+     * Set the ticket subject
+     *
+     * The subject is the answer to the built-in "subject" field of the ticket
+     * form and is mirrored into ticket__cdata. Saving the form entry fires
+     * the signal that refreshes that view. Like Ticket::updateField() in the
+     * staff UI, the change is logged as an "edited" thread event with the old
+     * and the new value, and the ticket's last update is set.
+     *
+     * @throws Exception If the ticket has no subject field (400)
+     */
+    private function setTicketSubject(Ticket $ticket, string $subject): bool
+    {
+        $previous = (string)$ticket->getSubject();
+        foreach (DynamicFormEntry::forTicket($ticket->getId()) as $form) {
+            if (!($field = $form->getField('subject')) || !$form->getAnswer('subject')) {
+                continue;
+            }
+            $form->setAnswer('subject', $subject);
+            // saveAnswers() returns false on failure, else the number of saved answers
+            if ($form->save() === false) {
+                throw new Exception('Failed to save subject', 500);
+            }
+            $ticket->loadDynamicData(true);
+            $ticket->logEvent('edited', ['fields' => [$field->get('id') => [$previous, $subject]]], 'API');
+            $ticket->lastupdate = SqlFunction::NOW();
+            $ticket->save();
+
+            return true;
+        }
+
+        throw new Exception('Ticket has no subject field', 400);
     }
 
     // =========================================================================

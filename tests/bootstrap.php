@@ -205,7 +205,10 @@ if (!class_exists('Ticket')) {
         private $userName;
         private $userEmail;
         private $customData;
+        private $lastupdate;
         public $ht = [];
+        /** Thread events logged via logEvent(): [state, data, user] */
+        public array $events = [];
 
         /**
          * Magic setter to emulate VerySimpleModel ORM behavior
@@ -343,6 +346,15 @@ if (!class_exists('Ticket')) {
 
         public function loadDynamicData($force = false) {
             return [];
+        }
+
+        public function logEvent($state, $data = null, $user = null, $annul = null) {
+            $this->events[] = [$state, $data, $user];
+        }
+
+        /** Test helper: what DynamicFormEntry::save() writes for the subject */
+        public function setSubjectAnswer(string $subject): void {
+            $this->subject = $subject;
         }
 
         public function setStatus($statusId) {
@@ -585,13 +597,16 @@ if (!class_exists('Priority')) {
     }
 }
 
-// Mock DynamicFormEntry: only the ticket-form priority answer.
-// $withoutPriority lists ticket IDs whose form lacks the field.
+// Mock DynamicFormEntry: the ticket-form priority and subject answers.
+// $withoutPriority / $withoutSubject list ticket IDs whose form lacks the field.
 if (!class_exists('DynamicFormEntry')) {
     class DynamicFormEntry {
         public static array $withoutPriority = [];
+        public static array $withoutSubject = [];
+        public static bool $saveFails = false;
         private $ticket;
         private $pendingPriorityId = null;
+        private $pendingSubject = null;
 
         private function __construct($ticket) {
             $this->ticket = $ticket;
@@ -607,24 +622,79 @@ if (!class_exists('DynamicFormEntry')) {
         }
 
         public function getAnswer($name) {
+            if ($name === 'subject') {
+                return in_array($this->ticket->getId(), self::$withoutSubject, true)
+                    ? null : $this->ticket->getSubject();
+            }
             if ($name !== 'priority' || in_array($this->ticket->getId(), self::$withoutPriority, true)) {
                 return null;
             }
             return $this->ticket->getPriorityId();
         }
 
+        public function getField($name) {
+            if ($name === 'subject' && !in_array($this->ticket->getId(), self::$withoutSubject, true)) {
+                return new MockFormField(['id' => 20, 'name' => 'subject']);
+            }
+            return null;
+        }
+
         public function setAnswer($name, $value, $id = false) {
             if ($name === 'priority') {
                 $this->pendingPriorityId = $id;
             }
+            if ($name === 'subject') {
+                $this->pendingSubject = $value;
+            }
         }
 
+        // Like saveAnswers(): false on failure, else the number of saved answers
         public function save() {
+            if (self::$saveFails) {
+                return false;
+            }
+            $saved = 0;
             if ($this->pendingPriorityId !== null) {
                 $this->ticket->setPriorityId($this->pendingPriorityId);
+                $saved++;
             }
-            return true;
+            if ($this->pendingSubject !== null) {
+                $this->ticket->setSubjectAnswer($this->pendingSubject);
+                $saved++;
+            }
+            return $saved ?: true;
         }
+    }
+}
+
+// Mock form field: get() and getConfiguration()
+if (!class_exists('MockFormField')) {
+    class MockFormField {
+        public function __construct(private array $ht, private array $config = []) {}
+        public function get($name) { return $this->ht[$name] ?? null; }
+        public function getConfiguration() { return $this->config; }
+    }
+}
+
+// Mock TicketForm: $subjectLength is the configured subject length (null = not set)
+if (!class_exists('TicketForm')) {
+    class TicketForm {
+        public static ?int $subjectLength = null;
+        public static function getInstance() { return new self(); }
+        public function getField($name) {
+            if ($name !== 'subject') {
+                return null;
+            }
+            $config = self::$subjectLength === null ? [] : ['length' => self::$subjectLength];
+            return new MockFormField(['id' => 20, 'name' => 'subject'], $config);
+        }
+    }
+}
+
+if (!class_exists('SqlFunction')) {
+    class SqlFunction {
+        public function __construct(public string $func) {}
+        public static function NOW() { return new self('NOW'); }
     }
 }
 
