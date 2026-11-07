@@ -124,8 +124,8 @@ paths:
       operationId: updateTicket
       summary: Update a ticket
       description: |
-        Update ticket properties such as status, department, priority, SLA, staff
-        assignment, due date, and add internal notes with attachments.
+        Update ticket properties such as subject, status, department, priority,
+        SLA, staff assignment, due date, and add internal notes with attachments.
 
         Also accepts `PUT` method.
 
@@ -1102,6 +1102,16 @@ components:
     UpdateTicketRequest:
       type: object
       properties:
+        subject:
+          type: string
+          description: |
+            New ticket subject. Trimmed; must be a non-empty single line of
+            plain text (no HTML, no control characters) within the length
+            configured on the ticket form's subject field (255 if none).
+            Validated before any other change. The change is logged as an
+            "edited" thread event with the old and the new subject.
+          examples:
+            - 'Printer on 2nd floor offline'
         statusId:
           oneOf:
             - type: string

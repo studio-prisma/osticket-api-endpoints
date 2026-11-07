@@ -25,7 +25,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Nothing yet
 
-## [2.6.0] - 2026-11-01
+## [2.7.0] - 2026-11-07
+
+### Added
+- `PATCH /api/tickets-update.php/{number}.json` accepts `subject` to rename a ticket. The subject is written as the answer of the ticket form's subject field, so `ticket__cdata` and the subject search follow. The change is logged as an "edited" thread event with the old and the new subject, like an edit in the staff UI. An unchanged subject is skipped.
+- Validation, before any other field of the request is changed: string, trimmed, not empty, valid UTF-8, a single line without control characters, no HTML (refused, not stripped), at most the length configured on the subject field of the ticket form (255 if none). Errors are answered with 400.
+
 
 ### Added
 - Task endpoints for osTicket tasks, standalone or linked to a ticket:
@@ -287,9 +292,10 @@ Release of the studio-prisma fork on top of upstream [v2.4.0](https://github.com
 [2.3.2]: https://github.com/markus-michalski/osticket-api-endpoints/releases/tag/v2.3.2
 [2.3.3]: https://github.com/markus-michalski/osticket-api-endpoints/releases/tag/v2.3.3
 [2.3.4]: https://github.com/markus-michalski/osticket-api-endpoints/releases/tag/v2.3.4
-[Unreleased]: https://github.com/studio-prisma/osticket-api-endpoints/compare/v2.6.0...HEAD
+[Unreleased]: https://github.com/studio-prisma/osticket-api-endpoints/compare/v2.7.0...HEAD
 [2.4.0]: https://github.com/markus-michalski/osticket-api-endpoints/releases/tag/v2.4.0
 [2.4.1]: https://github.com/studio-prisma/osticket-api-endpoints/releases/tag/v2.4.1
 [2.5.0]: https://github.com/studio-prisma/osticket-api-endpoints/releases/tag/v2.5.0
 [2.5.1]: https://github.com/studio-prisma/osticket-api-endpoints/releases/tag/v2.5.1
 [2.6.0]: https://github.com/studio-prisma/osticket-api-endpoints/releases/tag/v2.6.0
+[2.7.0]: https://github.com/studio-prisma/osticket-api-endpoints/releases/tag/v2.7.0
