@@ -230,6 +230,9 @@ class ExtendedTicketApiController extends TicketApiController {
         $subject = array_key_exists('subject', $data)
             ? $this->validateSubject($data['subject'])
             : null;
+        $feedback = array_key_exists('feedback', $data)
+            ? self::validateFeedbackFlag($data['feedback'])
+            : null;
 
         $updated = false;
 
@@ -280,8 +283,24 @@ class ExtendedTicketApiController extends TicketApiController {
         if (isset($data['statusId'])) {
             $statusId = $this->validator->validateStatusId($data['statusId']);
             if ($ticket->getStatusId() != $statusId) {
-                if ($ticket->setStatus($statusId)) {
-                    $updated = true;
+                // Bridge for the Feedback plugin (studio-prisma/osticket-plugin-feedback
+                // 0.2+): it reads $_POST['feedback_ask'] when a ticket closes, the same
+                // way Markdown Support reads $_POST['format'] below. Scoped to this call.
+                $hadAsk = array_key_exists('feedback_ask', $_POST);
+                $oldAsk = $_POST['feedback_ask'] ?? null;
+                if ($feedback !== null) {
+                    $_POST['feedback_ask'] = $feedback ? '1' : '0';
+                }
+                try {
+                    if ($ticket->setStatus($statusId)) {
+                        $updated = true;
+                    }
+                } finally {
+                    if ($hadAsk) {
+                        $_POST['feedback_ask'] = $oldAsk;
+                    } else {
+                        unset($_POST['feedback_ask']);
+                    }
                 }
             }
         }
@@ -716,6 +735,27 @@ class ExtendedTicketApiController extends TicketApiController {
         }
 
         throw new Exception('Ticket has no priority field', 400);
+    }
+
+    /**
+     * The `feedback` field of an update: true or false (JSON booleans; 1/0
+     * and "true"/"false" are accepted as well). Anything else is refused
+     * before the first change.
+     *
+     * @throws Exception 400 on invalid input
+     */
+    public static function validateFeedbackFlag(mixed $value): bool
+    {
+        if (is_bool($value)) {
+            return $value;
+        }
+        if ($value === 1 || $value === '1' || $value === 'true') {
+            return true;
+        }
+        if ($value === 0 || $value === '0' || $value === 'false') {
+            return false;
+        }
+        throw new Exception('feedback must be true or false', 400);
     }
 
     /** Subject length when the ticket form does not configure one */

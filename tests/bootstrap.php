@@ -357,8 +357,12 @@ if (!class_exists('Ticket')) {
             $this->subject = $subject;
         }
 
+        /** $_POST['feedback_ask'] as setStatus() saw it (Feedback plugin bridge) */
+        public static $feedbackAskSeen = 'unset';
+
         public function setStatus($statusId) {
             $this->statusId = $statusId;
+            self::$feedbackAskSeen = array_key_exists('feedback_ask', $_POST) ? $_POST['feedback_ask'] : 'unset';
             return true;
         }
 
