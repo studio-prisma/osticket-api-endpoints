@@ -5,7 +5,7 @@ Extends osTicket's REST API with powerful endpoints for advanced ticket manageme
 ## Key Features
 
 - Extended Ticket Creation with Markdown formatting, department routing, subticket support
-- Full Ticket Management (update, retrieve, search, delete)
+- Full Ticket Management (update, retrieve, search, delete); a status change can carry `feedback: true|false` for the [Feedback plugin](https://github.com/studio-prisma/osticket-plugin-feedback) (0.2+)
 - Subticket API for parent-child relationships (requires [Subticket Manager Plugin](https://github.com/studio-prisma/osticket-subticket-manager))
 - Ticket Statistics (global, by department, by staff)
 - Task API: read, search, create, update (edit, link to a ticket, assign, transfer, due date, close/reopen, notes) and delete osTicket tasks, run as a configurable agent
