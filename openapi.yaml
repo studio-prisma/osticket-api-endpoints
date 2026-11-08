@@ -48,6 +48,11 @@ tags:
       linked to a ticket. Each operation has its own API key permission.
       Changes run as the agent set in "Tasks as Agent"; osTicket applies that
       agent's role in the task's department, like in the staff UI.
+  - name: Knowledge Base
+    description: |
+      FAQ categories and articles: list, search, read, create and change,
+      including internal/public/featured. There is no delete. Reading needs
+      `can_read_kb`, changes need `can_write_kb`.
 
 security:
   - ApiKeyAuth: []
@@ -898,6 +903,252 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+  # ===========================================================================
+  # Knowledge Base
+  # ===========================================================================
+
+  /kb-categories-list.php:
+    get:
+      operationId: listKbCategories
+      summary: List FAQ categories
+      description: All categories with parent, visibility and article count. Requires `can_read_kb`.
+      tags:
+        - Knowledge Base
+      responses:
+        '200':
+          description: Categories
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                  categories:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/KbCategory'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /kb-categories-create.php:
+    post:
+      operationId: createKbCategory
+      summary: Create an FAQ category
+      description: |
+        Creates a category through osTicket's `Category::update()` (same
+        validation and HTML sanitizing as the staff UI). Internal unless
+        `visibility` is set. Requires `can_write_kb`.
+      tags:
+        - Knowledge Base
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KbCategoryRequest'
+      responses:
+        '201':
+          description: Category created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KbCategory'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /kb-categories-update.php/{id}.{format}:
+    patch:
+      operationId: updateKbCategory
+      summary: Change an FAQ category
+      description: |
+        Fields left out keep their value. A category cannot become its own
+        parent or move below one of its subcategories. Nothing is deleted.
+        Requires `can_write_kb`.
+      tags:
+        - Knowledge Base
+      parameters:
+        - $ref: '#/components/parameters/kbId'
+        - $ref: '#/components/parameters/responseFormat'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KbCategoryRequest'
+      responses:
+        '200':
+          description: Category changed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KbCategory'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /kb-faq-search.php:
+    get:
+      operationId: searchKbArticles
+      summary: Search FAQ articles
+      description: |
+        Newest change first. Text search covers title and answer. `slug`
+        finds the article behind a friendly URL. Requires `can_read_kb`.
+      tags:
+        - Knowledge Base
+      parameters:
+        - name: query
+          in: query
+          schema:
+            type: string
+            maxLength: 200
+        - name: categoryId
+          in: query
+          schema:
+            type: integer
+        - name: visibility
+          in: query
+          schema:
+            type: string
+            enum: [internal, public, featured]
+        - name: slug
+          in: query
+          schema:
+            type: string
+            pattern: '^[a-z0-9]+(-[a-z0-9]+)*$'
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: Matching articles (without answer)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                  limit:
+                    type: integer
+                  offset:
+                    type: integer
+                  articles:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/KbArticle'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /kb-faq-get.php/{id}.{format}:
+    get:
+      operationId: getKbArticle
+      summary: Get an FAQ article
+      description: Article with answer (HTML), notes and help topics. Requires `can_read_kb`.
+      tags:
+        - Knowledge Base
+      parameters:
+        - $ref: '#/components/parameters/kbId'
+        - $ref: '#/components/parameters/responseFormat'
+      responses:
+        '200':
+          description: Article
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KbArticleDetail'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /kb-faq-create.php:
+    post:
+      operationId: createKbArticle
+      summary: Create an FAQ article
+      description: |
+        Creates an article through osTicket's `FAQ::update()`: the answer is
+        sanitized like in the staff UI, tags are stripped from the title,
+        duplicate titles are refused. Internal unless `visibility` is set.
+        Requires `can_write_kb`.
+      tags:
+        - Knowledge Base
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/KbArticleRequest'
+                - required: [question, answer, categoryId]
+      responses:
+        '201':
+          description: Article created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KbArticleDetail'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /kb-faq-update.php/{id}.{format}:
+    patch:
+      operationId: updateKbArticle
+      summary: Change an FAQ article
+      description: |
+        Fields left out keep their value; linked help topics and attachments
+        stay. `visibility: internal` hides an article from the portal. There
+        is no delete. Requires `can_write_kb`.
+      tags:
+        - Knowledge Base
+      parameters:
+        - $ref: '#/components/parameters/kbId'
+        - $ref: '#/components/parameters/responseFormat'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KbArticleRequest'
+      responses:
+        '200':
+          description: Article changed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KbArticleDetail'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
 # =============================================================================
 # Components
 # =============================================================================
@@ -934,6 +1185,15 @@ components:
       schema:
         type: string
         pattern: '^[A-Za-z0-9-]{1,20}$'
+
+    kbId:
+      name: id
+      in: path
+      required: true
+      description: Article or category ID
+      schema:
+        type: integer
+        minimum: 1
 
     responseFormat:
       name: format
@@ -1781,3 +2041,132 @@ components:
           type: boolean
           default: true
           description: Send osTicket's agent alerts for transfer, assignment, note and update
+
+    KbVisibility:
+      type: string
+      enum: [internal, public, featured]
+      description: |
+        internal = staff only; public = portal; featured = portal and start
+        page. An article shows in the portal only if its category is public
+        or featured too.
+
+    KbCategory:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        fullName:
+          type: string
+          description: Name with parent, e.g. "Prozesse / Intern"
+        parentId:
+          type: [integer, 'null']
+        parent:
+          type: [string, 'null']
+        visibility:
+          $ref: '#/components/schemas/KbVisibility'
+        description:
+          type: string
+          description: HTML
+        notes:
+          type: string
+        articleCount:
+          type: integer
+        created:
+          type: [string, 'null']
+        updated:
+          type: [string, 'null']
+
+    KbCategoryRequest:
+      type: object
+      additionalProperties: false
+      description: For create, `name` and `description` are required.
+      properties:
+        name:
+          type: string
+          minLength: 3
+          maxLength: 125
+        description:
+          type: string
+          description: HTML, required by osTicket
+        notes:
+          type: string
+          maxLength: 255
+        parentId:
+          type: [integer, 'null']
+          description: null or 0 = top level
+        visibility:
+          $ref: '#/components/schemas/KbVisibility'
+
+    KbArticle:
+      type: object
+      properties:
+        id:
+          type: integer
+        question:
+          type: string
+        categoryId:
+          type: integer
+        category:
+          type: [string, 'null']
+        categoryVisibility:
+          $ref: '#/components/schemas/KbVisibility'
+        visibility:
+          $ref: '#/components/schemas/KbVisibility'
+        visibleInPortal:
+          type: boolean
+        slug:
+          type: [string, 'null']
+          description: Friendly URL slug, read from the RewriteRules in the root .htaccess (never written)
+        publicUrl:
+          type: [string, 'null']
+          description: <helpdesk URL>/kb/<slug>
+        portalUrl:
+          type: [string, 'null']
+        staffUrl:
+          type: [string, 'null']
+        created:
+          type: [string, 'null']
+        updated:
+          type: [string, 'null']
+
+    KbArticleDetail:
+      allOf:
+        - $ref: '#/components/schemas/KbArticle'
+        - type: object
+          properties:
+            answer:
+              type: string
+              description: HTML
+            notes:
+              type: string
+              description: Internal notes (HTML)
+            helpTopics:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+
+    KbArticleRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        question:
+          type: string
+          maxLength: 255
+          description: Title; HTML tags are stripped
+        answer:
+          type: string
+          description: HTML, sanitized by osTicket (max 65535 bytes)
+        categoryId:
+          type: integer
+        notes:
+          type: string
+          description: Internal notes (HTML)
+        visibility:
+          $ref: '#/components/schemas/KbVisibility'

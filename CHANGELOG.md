@@ -25,6 +25,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Nothing yet
 
+## [2.8.0] - 2026-11-08
+
+### Added
+- Knowledge base endpoints for FAQ categories and articles. There is no delete; hiding an article means setting it to `internal`.
+  - `GET /api/kb-categories-list.php`: all categories with parent, visibility and article count.
+  - `POST /api/kb-categories-create.php`, `PATCH /api/kb-categories-update.php/{id}.json`: name, description, notes, parent, visibility. A category cannot become its own parent or move below one of its subcategories.
+  - `GET /api/kb-faq-search.php`: text, category, visibility, slug; paging.
+  - `GET /api/kb-faq-get.php/{id}.json`: article with answer (HTML), notes and help topics.
+  - `POST /api/kb-faq-create.php`, `PATCH /api/kb-faq-update.php/{id}.json`: title, answer, category, notes, visibility (`internal`, `public`, `featured`). Fields left out keep their value; help topics and attachments stay linked.
+- Changes go through osTicket's `FAQ::update()` and `Category::update()`, so the answer is sanitized like in the staff UI and duplicate titles/names are refused. New articles and categories are internal unless `visibility` is set.
+- Article responses report `visibleInPortal` (article and category public), and `slug`/`publicUrl` for friendly `/kb/<slug>` URLs. The slugs are read from the `RewriteRule ^kb/<slug>$ kb/faq.php?id=<ID>` lines of the root `.htaccess`; the file is never written.
+- Two API key permissions, off by default: `can_read_kb`, `can_write_kb`. Write does not imply read.
+
+### Fixed
+- Updating the plugin left the task rewrite rules behind in `api/.htaccess`: removing the old rule block stopped at the subticket unlink rule. The template now ends with an explicit end marker, and leftover plugin rules from earlier updates are removed.
+
 ## [2.7.0] - 2026-11-07
 
 ### Added

@@ -23,6 +23,8 @@ enum Permission: string
     case ReadTasks = 'can_read_tasks';
     case SearchTasks = 'can_search_tasks';
     case DeleteTasks = 'can_delete_tasks';
+    case ReadKb = 'can_read_kb';
+    case WriteKb = 'can_write_kb';
 
     /**
      * Get human-readable label for this permission
@@ -45,6 +47,8 @@ enum Permission: string
             self::ReadTasks => 'Read Tasks',
             self::SearchTasks => 'Search Tasks',
             self::DeleteTasks => 'Delete Tasks',
+            self::ReadKb => 'Read Knowledge Base',
+            self::WriteKb => 'Change Knowledge Base',
         };
     }
 
@@ -69,6 +73,8 @@ enum Permission: string
             self::ReadTasks => 'GET /tickets-tasks-get/:number',
             self::SearchTasks => 'GET /tickets-tasks-search',
             self::DeleteTasks => 'DELETE /tickets-tasks-delete/:number',
+            self::ReadKb => 'GET /kb-categories-list, /kb-faq-search, /kb-faq-get/:id',
+            self::WriteKb => 'POST/PATCH /kb-categories-*, /kb-faq-create, /kb-faq-update/:id',
         };
     }
 
@@ -94,6 +100,8 @@ enum Permission: string
             self::ReadTasks => 'read tasks',
             self::SearchTasks => 'search tasks',
             self::DeleteTasks => 'delete tasks',
+            self::ReadKb => 'read the knowledge base',
+            self::WriteKb => 'change the knowledge base',
         });
     }
 

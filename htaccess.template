@@ -59,3 +59,19 @@ RewriteRule ^tickets-tasks-update\.php/ - [L]
 
 # Task Delete API endpoint (path parameter: task number)
 RewriteRule ^tickets-tasks-delete\.php/ - [L]
+
+# Knowledge base: category list and create (no path parameter - optional .json in PATH_INFO)
+RewriteRule ^kb-categories-list\.php.*$ - [L]
+RewriteRule ^kb-categories-create\.php.*$ - [L]
+
+# Knowledge base: category update (path parameter: category id)
+RewriteRule ^kb-categories-update\.php/ - [L]
+
+# Knowledge base: article search and create (no path parameter - optional .json in PATH_INFO)
+RewriteRule ^kb-faq-search\.php.*$ - [L]
+RewriteRule ^kb-faq-create\.php.*$ - [L]
+
+# Knowledge base: article get and update (path parameter: article id)
+RewriteRule ^kb-faq-get\.php/ - [L]
+RewriteRule ^kb-faq-update\.php/ - [L]
+# End of API Endpoints Plugin rules

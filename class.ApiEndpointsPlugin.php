@@ -575,6 +575,16 @@ class ApiEndpointsPlugin extends Plugin {
                 'name' => 'can_delete_tasks',
                 'definition' => 'TINYINT(1) UNSIGNED NOT NULL DEFAULT 0',
                 'after' => 'can_search_tasks'
+            ),
+            array(
+                'name' => 'can_read_kb',
+                'definition' => 'TINYINT(1) UNSIGNED NOT NULL DEFAULT 0',
+                'after' => 'can_delete_tasks'
+            ),
+            array(
+                'name' => 'can_write_kb',
+                'definition' => 'TINYINT(1) UNSIGNED NOT NULL DEFAULT 0',
+                'after' => 'can_read_kb'
             )
         );
 
@@ -636,6 +646,8 @@ class ApiEndpointsPlugin extends Plugin {
 
         // List of columns to remove (in reverse order of adding)
         $columnsToRemove = array(
+            'can_write_kb',
+            'can_read_kb',
             'can_delete_tasks',
             'can_search_tasks',
             'can_read_tasks',
@@ -826,12 +838,16 @@ class ApiEndpointsPlugin extends Plugin {
             return true; // Nothing to remove
         }
 
-        // Find end of template block (next empty line or closing IfModule)
-        // The template ends with the last RewriteRule line, so we look for the pattern:
-        // RewriteRule ^tickets-subtickets-unlink\.php/ - [L]
+        // Find end of template block. Since 2.8.0 the template ends with an
+        // explicit end marker. Older blocks end with the subticket unlink rule;
+        // their later rules (tasks) are removed as leftovers below.
         $search_start = $start_pos;
-        $end_marker = 'RewriteRule ^tickets-subtickets-unlink\.php/ - [L]';
+        $end_marker = '# End of API Endpoints Plugin rules';
         $end_pos = strpos($content, $end_marker, $search_start);
+        if ($end_pos === false) {
+            $end_marker = 'RewriteRule ^tickets-subtickets-unlink\.php/ - [L]';
+            $end_pos = strpos($content, $end_marker, $search_start);
+        }
 
         if ($end_pos === false) {
             // Fallback: look for any RewriteRule pattern and find the last one in our block
@@ -853,6 +869,9 @@ class ApiEndpointsPlugin extends Plugin {
         // Remove the entire block (including leading newline)
         $content = substr_replace($content, '', $start_pos, $end_pos - $start_pos);
 
+        // Remove leftovers of older blocks whose end was detected too early
+        $content = self::stripLeftoverRules($content, __DIR__ . '/htaccess.template');
+
         // Write back
         $result = file_put_contents($htaccess_file, $content);
         if ($result === false) {
@@ -862,6 +881,46 @@ class ApiEndpointsPlugin extends Plugin {
 
         error_log('[API Endpoints] Removed .htaccess template block');
         return true;
+    }
+
+    /**
+     * Remove plugin rules left outside the template block
+     *
+     * Up to 2.7.0 the block removal stopped at the subticket unlink rule,
+     * so every update left the rules after it (tasks) behind. This removes
+     * pass-through rules for the plugin's own endpoint files
+     * (tickets-*.php, kb-*.php) and comment lines that appear verbatim in
+     * the template. osTicket's own rules are never touched.
+     *
+     * @param string $content .htaccess content without the template block
+     * @param string $templateFile Path of htaccess.template
+     * @return string Cleaned content
+     */
+    static function stripLeftoverRules($content, $templateFile) {
+        $comments = array();
+        if (is_readable($templateFile)) {
+            foreach (preg_split('/\R/', (string)file_get_contents($templateFile)) as $line) {
+                $line = trim($line);
+                // Only specific comments: skip "#", separator and empty lines
+                if (strlen($line) > 12 && $line[0] === '#' && strpos($line, '=====') === false) {
+                    $comments[$line] = true;
+                }
+            }
+        }
+
+        $kept = array();
+        foreach (preg_split('/\R/', $content) as $line) {
+            $trimmed = trim($line);
+            if (preg_match('#^RewriteRule \^(tickets|kb)-[a-z-]+\\\\\.php(/|\.\*\$) - \[L\]$#', $trimmed)) {
+                continue;
+            }
+            if (isset($comments[$trimmed])) {
+                continue;
+            }
+            $kept[] = $line;
+        }
+
+        return preg_replace("/\n{3,}/", "\n\n", implode("\n", $kept));
     }
 
     /**
