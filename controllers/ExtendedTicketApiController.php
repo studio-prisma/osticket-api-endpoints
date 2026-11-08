@@ -21,6 +21,7 @@ require_once __DIR__ . '/../lib/Services/TicketValidatorService.php';
 require_once __DIR__ . '/../lib/Services/PermissionChecker.php';
 require_once __DIR__ . '/../lib/Services/TicketService.php';
 require_once __DIR__ . '/../lib/Services/TaskService.php';
+require_once __DIR__ . '/../lib/Services/KbService.php';
 require_once __DIR__ . '/../lib/Enums/Permission.php';
 
 /**
@@ -629,6 +630,66 @@ class ExtendedTicketApiController extends TicketApiController {
         $this->permissionChecker->require($key, Permission::DeleteTasks, 'delete tasks');
 
         return TaskService::getInstance()->deleteTask($this->resolveTaskAgent(), $number, $comments);
+    }
+
+    // =========================================================================
+    // Knowledge base (FAQ articles and categories)
+    // Two API key permissions: can_read_kb, can_write_kb. FAQs have no
+    // department, so no agent is involved. Nothing is ever deleted.
+    // =========================================================================
+
+    /**
+     * @throws Exception 401 key/permission
+     */
+    private function requireKbPermission(Permission $permission): void
+    {
+        $key = $this->requireApiKey();
+        if (!$key) {
+            throw new Exception('API key not authorized', 401);
+        }
+        $this->permissionChecker->require($key, $permission);
+    }
+
+    public function listKbCategories(): array
+    {
+        $this->requireKbPermission(Permission::ReadKb);
+        return KbService::getInstance()->listCategories();
+    }
+
+    public function createKbCategory(array $data): array
+    {
+        $this->requireKbPermission(Permission::WriteKb);
+        return KbService::getInstance()->createCategory($data);
+    }
+
+    public function updateKbCategory(string $id, array $data): array
+    {
+        $this->requireKbPermission(Permission::WriteKb);
+        return KbService::getInstance()->updateCategory($id, $data);
+    }
+
+    public function searchKbArticles(array $params): array
+    {
+        $this->requireKbPermission(Permission::ReadKb);
+        return KbService::getInstance()->searchArticles($params);
+    }
+
+    public function getKbArticle(string $id): array
+    {
+        $this->requireKbPermission(Permission::ReadKb);
+        return KbService::getInstance()->getArticle($id);
+    }
+
+    public function createKbArticle(array $data): array
+    {
+        $this->requireKbPermission(Permission::WriteKb);
+        return KbService::getInstance()->createArticle($data);
+    }
+
+    public function updateKbArticle(string $id, array $data): array
+    {
+        $this->requireKbPermission(Permission::WriteKb);
+        return KbService::getInstance()->updateArticle($id, $data);
     }
 
     /**

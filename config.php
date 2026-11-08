@@ -65,7 +65,7 @@ class ApiEndpointsConfig extends PluginConfig {
                 'default' => '',
                 'configuration' => array(
                     'html' => true,
-                    'content' => '<div style="background: #f5f5f5; padding: 15px; border-left: 4px solid #2196F3; margin: 10px 0;"><p style="margin: 0 0 10px 0;"><strong>The following API endpoints are available:</strong></p><ul style="margin: 5px 0; padding-left: 20px; list-style: none;"><li style="margin: 5px 0;">✓ <strong>POST /tickets</strong> - Create tickets with format (markdown/html/text) and department<br><span style="color: #666; font-size: 11px;">Controlled by: <code>can_create_tickets</code> permission</span></li><li style="margin: 5px 0;">✓ <strong>PATCH/PUT /tickets/:id</strong> - Update tickets (department, topic, parent, priority, status, SLA, staff)<br><span style="color: #666; font-size: 11px;">Controlled by: <code>can_update_tickets</code> permission</span></li><li style="margin: 5px 0;">✓ <strong>GET /tickets-get.php/:number</strong> - Retrieve ticket by number with full details and thread<br><span style="color: #666; font-size: 11px;">Controlled by: <code>can_read_tickets</code> permission</span></li><li style="margin: 5px 0;">✓ <strong>GET /tickets-search.php</strong> - Search tickets by query, status, department with pagination<br><span style="color: #666; font-size: 11px;">Controlled by: <code>can_search_tickets</code> permission</span></li><li style="margin: 5px 0;">✓ <strong>DELETE /tickets-delete.php/:number</strong> - Delete tickets with cascading cleanup<br><span style="color: #666; font-size: 11px;">Controlled by: <code>can_delete_tickets</code> permission</span></li><li style="margin: 5px 0;">✓ <strong>GET /tickets-stats.php</strong> - Retrieve ticket statistics for dashboards and reporting<br><span style="color: #666; font-size: 11px;">Controlled by: <code>can_read_stats</code> permission</span></li><li style="margin: 5px 0;">✓ <strong>Subticket Operations</strong> - Manage parent-child ticket relationships (get parent, list children, create/unlink)<br><span style="color: #666; font-size: 11px;">Controlled by: <code>can_manage_subtickets</code> permission (requires Subticket Manager Plugin)</span></li><li style="margin: 5px 0;">✓ <strong>POST /tickets-reply.php/:number</strong> - Reply to the customer (public reply, sends the reply email)<br><span style="color: #666; font-size: 11px;">Controlled by: <code>can_reply_tickets</code> permission and the "Reply as Agent" setting</span></li><li style="margin: 5px 0;">✓ <strong>Task Operations</strong> - Read, search, create, update (edit, assign, transfer, due date, close/reopen, link to a ticket, notes) and delete tasks<br><span style="color: #666; font-size: 11px;">Controlled by: <code>can_create_tasks</code>, <code>can_update_tasks</code>, <code>can_read_tasks</code>, <code>can_search_tasks</code>, <code>can_delete_tasks</code>; changes also need the "Tasks as Agent" setting</span></li></ul><p style="margin: 15px 0 0 0; padding: 10px; background: #fff3e0; border-left: 3px solid #ff9800; font-size: 13px;"><strong>⚠ Important:</strong> Access to these endpoints is controlled individually per API Key using the permissions below.</p></div>'
+                    'content' => '<div style="background: #f5f5f5; padding: 15px; border-left: 4px solid #2196F3; margin: 10px 0;"><p style="margin: 0 0 10px 0;"><strong>The following API endpoints are available:</strong></p><ul style="margin: 5px 0; padding-left: 20px; list-style: none;"><li style="margin: 5px 0;">✓ <strong>POST /tickets</strong> - Create tickets with format (markdown/html/text) and department<br><span style="color: #666; font-size: 11px;">Controlled by: <code>can_create_tickets</code> permission</span></li><li style="margin: 5px 0;">✓ <strong>PATCH/PUT /tickets/:id</strong> - Update tickets (department, topic, parent, priority, status, SLA, staff)<br><span style="color: #666; font-size: 11px;">Controlled by: <code>can_update_tickets</code> permission</span></li><li style="margin: 5px 0;">✓ <strong>GET /tickets-get.php/:number</strong> - Retrieve ticket by number with full details and thread<br><span style="color: #666; font-size: 11px;">Controlled by: <code>can_read_tickets</code> permission</span></li><li style="margin: 5px 0;">✓ <strong>GET /tickets-search.php</strong> - Search tickets by query, status, department with pagination<br><span style="color: #666; font-size: 11px;">Controlled by: <code>can_search_tickets</code> permission</span></li><li style="margin: 5px 0;">✓ <strong>DELETE /tickets-delete.php/:number</strong> - Delete tickets with cascading cleanup<br><span style="color: #666; font-size: 11px;">Controlled by: <code>can_delete_tickets</code> permission</span></li><li style="margin: 5px 0;">✓ <strong>GET /tickets-stats.php</strong> - Retrieve ticket statistics for dashboards and reporting<br><span style="color: #666; font-size: 11px;">Controlled by: <code>can_read_stats</code> permission</span></li><li style="margin: 5px 0;">✓ <strong>Subticket Operations</strong> - Manage parent-child ticket relationships (get parent, list children, create/unlink)<br><span style="color: #666; font-size: 11px;">Controlled by: <code>can_manage_subtickets</code> permission (requires Subticket Manager Plugin)</span></li><li style="margin: 5px 0;">✓ <strong>POST /tickets-reply.php/:number</strong> - Reply to the customer (public reply, sends the reply email)<br><span style="color: #666; font-size: 11px;">Controlled by: <code>can_reply_tickets</code> permission and the "Reply as Agent" setting</span></li><li style="margin: 5px 0;">✓ <strong>Task Operations</strong> - Read, search, create, update (edit, assign, transfer, due date, close/reopen, link to a ticket, notes) and delete tasks<br><span style="color: #666; font-size: 11px;">Controlled by: <code>can_create_tasks</code>, <code>can_update_tasks</code>, <code>can_read_tasks</code>, <code>can_search_tasks</code>, <code>can_delete_tasks</code>; changes also need the "Tasks as Agent" setting</span></li><li style="margin: 5px 0;">✓ <strong>Knowledge Base</strong> - List, create and change FAQ categories; search, read, create and change FAQ articles, including internal/public/featured. Nothing is deleted. Friendly /kb/changes also need the "Tasks as Agent" setting</span></li></ul>lt;slugchanges also need the "Tasks as Agent" setting</span></li></ul>gt; URLs are read from the root .htaccess<br><span style="color: #666; font-size: 11px;">Controlled by: <code>can_read_kb</code>, <code>can_write_kb</code></span></li></ul><p style="margin: 15px 0 0 0; padding: 10px; background: #fff3e0; border-left: 3px solid #ff9800; font-size: 13px;"><strong>⚠ Important:</strong> Access to these endpoints is controlled individually per API Key using the permissions below.</p></div>'
                 )
             )),
 
@@ -220,6 +220,28 @@ class ApiEndpointsConfig extends PluginConfig {
     }
 
     /**
+     * Knowledge base permissions: column => [form field, label, endpoint]
+     *
+     * @return array<string, array{0: string, 1: string, 2: string}>
+     */
+    static function kbPermissions() {
+        return array(
+            'can_read_kb' => array('api_key_kb_read_permissions', 'Read Knowledge Base', 'GET /kb-categories-list, /kb-faq-search, /kb-faq-get/:id'),
+            'can_write_kb' => array('api_key_kb_write_permissions', 'Change Knowledge Base', 'POST/PATCH /kb-categories-*, /kb-faq-create, /kb-faq-update/:id (no delete)'),
+        );
+    }
+
+    /**
+     * Task and knowledge base permissions (rendered, saved and
+     * whitelisted the same way)
+     *
+     * @return array<string, array{0: string, 1: string, 2: string}>
+     */
+    static function extraPermissions() {
+        return array_merge(self::taskPermissions(), self::kbPermissions());
+    }
+
+    /**
      * Get list of allowed permission columns for validation
      *
      * @return array List of allowed column names
@@ -234,7 +256,7 @@ class ApiEndpointsConfig extends PluginConfig {
             'can_read_stats',
             'can_manage_subtickets',
             'can_reply_tickets'
-        ), array_keys(self::taskPermissions()));
+        ), array_keys(self::extraPermissions()));
     }
 
     /**
@@ -264,7 +286,7 @@ class ApiEndpointsConfig extends PluginConfig {
             'can_read_stats',
             'can_manage_subtickets',
             'can_reply_tickets'
-        ), array_keys(self::taskPermissions()));
+        ), array_keys(self::extraPermissions()));
 
         // Validate column name against whitelist
         if (!in_array($columnName, $allowedColumns)) {
@@ -291,7 +313,7 @@ class ApiEndpointsConfig extends PluginConfig {
     function pre_save(&$config = [], &$errors = []) {
         // Handle API Key permissions from $_POST (not in $config because FreeTextField doesn't register fields)
         $taskPermissionPosted = false;
-        foreach (self::taskPermissions() as $taskField) {
+        foreach (self::extraPermissions() as $taskField) {
             if (isset($_POST[$taskField[0]])) {
                 $taskPermissionPosted = true;
             }
@@ -306,7 +328,7 @@ class ApiEndpointsConfig extends PluginConfig {
             $hasSubticketColumn = $this->columnExists('can_manage_subtickets');
             $hasReplyColumn = $this->columnExists('can_reply_tickets');
             $taskColumns = array();
-            foreach (self::taskPermissions() as $column => $taskField) {
+            foreach (self::extraPermissions() as $column => $taskField) {
                 if ($this->columnExists($column)) {
                     $taskColumns[$column] = $taskField[0];
                 }
@@ -385,7 +407,7 @@ class ApiEndpointsConfig extends PluginConfig {
                     $setClauses[] = sprintf('`can_reply_tickets` = %d', (int)$canReply);
                 }
 
-                // Column names come from taskPermissions() and exist (checked above)
+                // Column names come from extraPermissions() and exist (checked above)
                 foreach ($taskColumns as $column => $field) {
                     $granted = isset($_POST[$field]) && is_array($_POST[$field]) && isset($_POST[$field][$apiKeyId]);
                     $setClauses[] = sprintf('`%s` = %d', $column, $granted ? 1 : 0);
@@ -436,7 +458,7 @@ class ApiEndpointsConfig extends PluginConfig {
         if ($hasSubticketColumn) $columns .= ', can_manage_subtickets';
         if ($hasReplyColumn) $columns .= ', can_reply_tickets';
         $taskColumns = array();
-        foreach (self::taskPermissions() as $column => $taskField) {
+        foreach (self::extraPermissions() as $column => $taskField) {
             if (self::columnExistsStatic($column)) {
                 $taskColumns[$column] = $taskField;
                 $columns .= ', ' . $column;

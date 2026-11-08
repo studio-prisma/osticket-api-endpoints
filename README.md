@@ -9,6 +9,7 @@ Extends osTicket's REST API with powerful endpoints for advanced ticket manageme
 - Subticket API for parent-child relationships (requires [Subticket Manager Plugin](https://github.com/studio-prisma/osticket-subticket-manager))
 - Ticket Statistics (global, by department, by staff)
 - Task API: read, search, create, update (edit, link to a ticket, assign, transfer, due date, close/reopen, notes) and delete osTicket tasks, run as a configurable agent
+- Knowledge Base API: list, create and change FAQ categories; search, read, create and change FAQ articles (internal/public/featured), with friendly `/kb/<slug>` URLs read from the root `.htaccess`. No delete
 - Granular API Key Permissions per endpoint
 - Name-Based Filters (human-readable names instead of IDs)
 - No Core Modifications (Signal-based architecture, update-safe)
