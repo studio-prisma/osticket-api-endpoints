@@ -25,6 +25,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Nothing yet
 
+## [2.9.0] - 2026-11-08
+
+### Added
+- `PATCH tickets-update`: optional field `feedback` (boolean) next to `statusId`. While the status changes it is passed to the Feedback plugin (studio-prisma/osticket-plugin-feedback 0.2+) as `$_POST['feedback_ask']` (`1`/`0`), the same bridge as `$_POST['format']` for Markdown Support. `true` asks the customer's satisfaction question if the plugin's rules allow it, `false` switches it off for the ticket. Left out, nothing is set and the plugin's own setting decides. Invalid values are refused with 400 before any change; `$_POST` is restored after the call.
+
 ## [2.8.0] - 2026-11-08
 
 ### Added
@@ -308,7 +313,8 @@ Release of the studio-prisma fork on top of upstream [v2.4.0](https://github.com
 [2.3.2]: https://github.com/markus-michalski/osticket-api-endpoints/releases/tag/v2.3.2
 [2.3.3]: https://github.com/markus-michalski/osticket-api-endpoints/releases/tag/v2.3.3
 [2.3.4]: https://github.com/markus-michalski/osticket-api-endpoints/releases/tag/v2.3.4
-[Unreleased]: https://github.com/studio-prisma/osticket-api-endpoints/compare/v2.7.0...HEAD
+[Unreleased]: https://github.com/studio-prisma/osticket-api-endpoints/compare/v2.9.0...HEAD
+[2.9.0]: https://github.com/studio-prisma/osticket-api-endpoints/compare/v2.8.0...v2.9.0
 [2.4.0]: https://github.com/markus-michalski/osticket-api-endpoints/releases/tag/v2.4.0
 [2.4.1]: https://github.com/studio-prisma/osticket-api-endpoints/releases/tag/v2.4.1
 [2.5.0]: https://github.com/studio-prisma/osticket-api-endpoints/releases/tag/v2.5.0

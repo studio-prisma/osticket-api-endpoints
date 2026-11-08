@@ -1380,6 +1380,18 @@ components:
           examples:
             - 'Resolved'
             - 3
+        feedback:
+          type: boolean
+          description: |
+            Only with statusId. Passed to the Feedback plugin
+            (studio-prisma/osticket-plugin-feedback 0.2+) as
+            $_POST['feedback_ask'] while the status changes: true asks the
+            customer the satisfaction question (if the plugin's rules allow
+            it), false switches it off for this ticket. Left out, the
+            plugin's setting for closes without an agent form decides.
+            Invalid values are refused with 400 before any change.
+          examples:
+            - true
         departmentId:
           oneOf:
             - type: string
