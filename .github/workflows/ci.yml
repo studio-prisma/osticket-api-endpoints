@@ -121,3 +121,28 @@ jobs:
           test -f lib/Enums/Permission.php || { echo "Error: Permission enum not found"; exit 1; }
           test -f lib/Enums/SortField.php || { echo "Error: SortField enum not found"; exit 1; }
           echo "✓ All library files present"
+
+  # Fork only (not part of upstream PRs): gitleaks, TruffleHog, Trivy, Semgrep.
+  # Semgrep blocks only new findings. Pinned to the commit of the release tag.
+  security:
+    uses: studio-prisma/github-config-security-workflow/.github/workflows/security.yml@346fbc812810930cf8916ba683ceab0b1dbef033 # v1.0.1
+    with:
+      semgrep-rules: "p/php p/security-audit"
+
+  # Do not rename. "Gate" aggregates every job; it is the required check.
+  gate:
+    name: Gate
+    runs-on: ubuntu-latest
+    needs: [code-quality, package-validation, security]
+    if: always()
+    steps:
+      - name: Fail unless every job succeeded
+        if: >-
+          contains(needs.*.result, 'failure') ||
+          contains(needs.*.result, 'cancelled') ||
+          contains(needs.*.result, 'skipped')
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+        run: |
+          echo "$RESULTS"
+          exit 1
