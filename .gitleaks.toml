@@ -1,0 +1,29 @@
+# gitleaks: Standardregeln + Ausnahme fuer die Upstream-History.
+#
+# Die Commits unten stammen aus markus-michalski/osticket-api-endpoints vor dem
+# Fork. Sie enthalten curl-Beispiele mit X-API-Key (README, api_endpoint_description.md,
+# docs/SUBTICKET_API.md) sowie test-results.log und TEST_CURL_COMMANDS.sh, die in
+# diesem Fork geloescht sind. Es sind keine Schluessel dieses Forks; rotieren kann
+# sie nur der Upstream. Geprueft am 23.11.2026. Neue Funde in eigenen Commits
+# schlagen weiter an.
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Upstream-History vor dem Fork (fremde Beispiel- und Testschluessel)"
+commits = [
+  "127c021b0ee52e3d2fe322af2a62f137b1e5f1e8",
+  "24182c8c8998ed5debf627227bbf3ccf4bfedc9e",
+  "399a99deed00de3aa0b7764839ddeb2c437a98b2",
+  "3ce06f59ef668ba48e0ca2ddc32e4ed31c85fbef",
+  "4d85cd48a76f3b8b041f979635240cfc9f9a7594",
+  "5054eff663b1b2127d2d6cd8e0a60214c345bc7a",
+  "6cc8ed81871640b5ed4b2918de971e6adf38329d",
+  "a2bb15eaf23505bebd2ecd455aae5caf5c5625e9",
+  "b9fb7efa86a10ff36d2b9dcb76ed816f70441a84",
+  "d53e7b369e76d63a244d34b31f50e53f659269b7",
+  "e269d06fb842e536f0f466e0a4bc5b6e4083f279",
+  "f0322e00d28be01a9f1d7674f01f75817f48f065",
+  "f3b3a181f12dadbd72ac334b03d98ec61524fcc7",
+]
