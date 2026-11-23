@@ -1,0 +1,2 @@
+# IPv4-Pruefung: Upstream-Testfixture mit Beispieladresse 192.168.1.100.
+tests/Integration/GetTicketEndpointTest.php
