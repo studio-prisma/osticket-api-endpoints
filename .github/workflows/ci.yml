@@ -125,9 +125,11 @@ jobs:
   # Fork only (not part of upstream PRs): gitleaks, TruffleHog, Trivy, Semgrep.
   # Semgrep blocks only new findings. Pinned to the commit of the release tag.
   security:
-    uses: studio-prisma/github-config-security-workflow/.github/workflows/security.yml@346fbc812810930cf8916ba683ceab0b1dbef033 # v1.0.1
+    uses: studio-prisma/github-config-security-workflow/.github/workflows/security.yml@510cea39c4ecb83fb25fdfca88649dc014eae883 # v1.1.0
     with:
       semgrep-rules: "p/php p/security-audit"
+    secrets:
+      identity-pattern: ${{ secrets.IDENTITY_PATTERN }}
 
   # Do not rename. "Gate" aggregates every job; it is the required check.
   gate:
